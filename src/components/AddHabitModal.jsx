@@ -39,7 +39,7 @@ export default function AddHabitModal({ onClose, existingHabit }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
       <div
-        className="w-full max-w-sm rounded-2xl p-6 shadow-2xl"
+        className="w-full max-w-md rounded-3xl p-8 shadow-2xl mx-4"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
         <h2 className="text-lg font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>
@@ -56,7 +56,7 @@ export default function AddHabitModal({ onClose, existingHabit }) {
               placeholder="e.g. Wake up @6, Running, Read..."
               autoFocus
               required
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all"
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
               style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               onFocus={(e) => e.target.style.borderColor = color}
               onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
@@ -65,13 +65,13 @@ export default function AddHabitModal({ onClose, existingHabit }) {
 
           <div>
             <label className="block text-xs font-medium mb-2.5" style={{ color: 'var(--text-secondary)' }}>Color</label>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-3 flex-wrap p-1">
               {PRESET_COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className="w-8 h-8 rounded-full transition-all duration-200 flex items-center justify-center"
+                  className="w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center"
                   style={{
                     background: c,
                     transform: color === c ? 'scale(1.25)' : 'scale(1)',
@@ -100,7 +100,7 @@ export default function AddHabitModal({ onClose, existingHabit }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
               style={{ background: 'var(--bg-primary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
             >
               Cancel
@@ -108,7 +108,7 @@ export default function AddHabitModal({ onClose, existingHabit }) {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
               style={{ background: color, color: '#fff', opacity: loading || !name.trim() ? 0.6 : 1 }}
             >
               {loading ? 'Saving…' : existingHabit ? 'Update' : 'Add Habit'}

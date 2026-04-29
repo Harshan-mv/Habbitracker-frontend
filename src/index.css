@@ -12,6 +12,9 @@
   --text-muted: #555555;
   --accent-green: #4ade80;
   --accent-green-dark: #22c55e;
+  --status-gray: #333333;
+  --status-amber: #f59e0b;
+  --status-red: #ef4444;
 }
 
 .light {
@@ -25,6 +28,9 @@
   --text-muted: #999999;
   --accent-green: #16a34a;
   --accent-green-dark: #15803d;
+  --status-gray: #e5e7eb;
+  --status-amber: #d97706;
+  --status-red: #dc2626;
 }
 
 * {

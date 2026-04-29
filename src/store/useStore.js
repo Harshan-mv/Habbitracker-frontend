@@ -41,10 +41,16 @@ const useStore = create((set, get) => ({
 
   // ─── Habits ─────────────────────────────────────────
   habits: [],
+  isLoadingHabits: false,
 
   fetchHabits: async () => {
-    const res = await api.get('/habits');
-    set({ habits: res.data });
+    set({ isLoadingHabits: true });
+    try {
+      const res = await api.get('/habits');
+      set({ habits: res.data });
+    } finally {
+      set({ isLoadingHabits: false });
+    }
   },
 
   addHabit: async (name, color) => {
@@ -66,10 +72,16 @@ const useStore = create((set, get) => ({
 
   // ─── Logs ───────────────────────────────────────────
   logs: [],
+  isLoadingLogs: false,
 
   fetchLogs: async (startDate, endDate) => {
-    const res = await api.get(`/logs?startDate=${startDate}&endDate=${endDate}`);
-    set({ logs: res.data });
+    set({ isLoadingLogs: true });
+    try {
+      const res = await api.get(`/logs?startDate=${startDate}&endDate=${endDate}`);
+      set({ logs: res.data });
+    } finally {
+      set({ isLoadingLogs: false });
+    }
   },
 
   toggleLog: async (habitId, dateStr) => {

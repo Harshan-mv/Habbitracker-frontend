@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import useStore from '../store/useStore';
 import AddHabitModal from './AddHabitModal';
+import Skeleton from './Skeleton';
 
 export default function HabitList() {
-  const { habits, deleteHabit } = useStore();
+  const { habits, deleteHabit, isLoadingHabits } = useStore();
   const [showModal, setShowModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -25,65 +26,79 @@ export default function HabitList() {
 
       {/* Habit rows */}
       <div className="flex-1">
-        {habits.map((habit) => (
-          <div
-            key={habit._id}
-            className="flex items-center gap-2 group py-3"
-            style={{ borderBottom: '1px solid var(--border)', height: '56px' }}
-          >
-            {/* Color dot + name */}
-            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: habit.color }} />
-              <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                {habit.name}
-              </span>
+        {isLoadingHabits ? (
+          // Skeleton loading state
+          Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 py-3"
+              style={{ borderBottom: '1px solid var(--border)', height: '56px' }}
+            >
+              <Skeleton variant="circle" width="12px" height="12px" className="flex-shrink-0" />
+              <Skeleton width="100px" height="14px" />
             </div>
+          ))
+        ) : (
+          habits.map((habit) => (
+            <div
+              key={habit._id}
+              className="flex items-center gap-2 group py-3"
+              style={{ borderBottom: '1px solid var(--border)', height: '56px' }}
+            >
+              {/* Color dot + name */}
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: habit.color }} />
+                <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                  {habit.name}
+                </span>
+              </div>
 
-            {/* Action buttons - visible on hover */}
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0">
-              <button
-                onClick={() => { setEditingHabit(habit); setShowModal(true); }}
-                className="p-1 rounded-lg transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = habit.color}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-                title="Edit habit"
-              >
-                <Pencil size={13} />
-              </button>
-              <button
-                onClick={() => setConfirmDelete(habit._id)}
-                className="p-1 rounded-lg transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-                title="Delete habit"
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
-
-            {/* Confirm delete */}
-            {confirmDelete === habit._id && (
-              <div className="flex gap-1 flex-shrink-0">
+              {/* Action buttons - visible on hover */}
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0">
                 <button
-                  onClick={() => handleDelete(habit._id)}
-                  className="px-2 py-0.5 rounded text-xs font-medium"
-                  style={{ background: '#ef4444', color: '#fff' }}
+                  onClick={() => { setEditingHabit(habit); setShowModal(true); }}
+                  className="p-1 rounded-lg transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = habit.color}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  title="Edit habit"
                 >
-                  Delete
+                  <Pencil size={13} />
                 </button>
                 <button
-                  onClick={() => setConfirmDelete(null)}
-                  className="px-2 py-0.5 rounded text-xs"
-                  style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                  onClick={() => setConfirmDelete(habit._id)}
+                  className="p-1 rounded-lg transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  title="Delete habit"
                 >
-                  No
+                  <Trash2 size={13} />
                 </button>
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* Confirm delete */}
+              {confirmDelete === habit._id && (
+                <div className="flex gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => handleDelete(habit._id)}
+                    className="px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ background: '#ef4444', color: '#fff' }}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(null)}
+                    className="px-2 py-0.5 rounded text-xs"
+                    style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                  >
+                    No
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Add new habit button */}

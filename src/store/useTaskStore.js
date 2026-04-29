@@ -3,13 +3,17 @@ import api from '../utils/axiosConfig';
 
 const useTaskStore = create((set, get) => ({
   tasks: [],
+  isLoadingTasks: false,
 
   fetchTasks: async () => {
+    set({ isLoadingTasks: true });
     try {
       const res = await api.get('/tasks');
       set({ tasks: res.data });
     } catch (error) {
       console.error('Failed to fetch tasks', error);
+    } finally {
+      set({ isLoadingTasks: false });
     }
   },
 

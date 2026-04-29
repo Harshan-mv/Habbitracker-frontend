@@ -65,3 +65,20 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-color: var(--bg-hover);
+  }
+  50% {
+    background-color: var(--border);
+  }
+  100% {
+    background-color: var(--bg-hover);
+  }
+}
+
+.skeleton {
+  animation: skeleton-shimmer 1.5s infinite ease-in-out;
+  border-radius: 4px;
+}

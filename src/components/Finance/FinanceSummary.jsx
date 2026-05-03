@@ -1,6 +1,6 @@
 import React from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { TrendingUp, TrendingDown, Wallet, CreditCard, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
 const fmt = (n) =>
   '₹' +
@@ -8,7 +8,7 @@ const fmt = (n) =>
 
 export default function FinanceSummary() {
   const getTotals = useFinanceStore((s) => s.getTotals);
-  const { totalIncome, regularExpenses, emiExpenses, totalAllocated, remaining } = getTotals();
+  const { totalIncome, totalExpenses, remaining } = getTotals();
 
   const cards = [
     {
@@ -19,25 +19,11 @@ export default function FinanceSummary() {
       bg: 'rgba(74,222,128,0.08)',
     },
     {
-      label: 'Expenses',
-      value: fmt(regularExpenses),
+      label: 'Total Expenses',
+      value: fmt(totalExpenses),
       icon: TrendingDown,
       color: 'var(--accent-red)',
       bg: 'rgba(248,113,113,0.08)',
-    },
-    {
-      label: 'EMI',
-      value: fmt(emiExpenses),
-      icon: CreditCard,
-      color: '#f59e0b',
-      bg: 'rgba(245,158,11,0.08)',
-    },
-    {
-      label: 'Goal Allocations',
-      value: fmt(totalAllocated),
-      icon: Target,
-      color: 'var(--accent-purple)',
-      bg: 'rgba(167,139,250,0.08)',
     },
     {
       label: 'Remaining',
@@ -49,7 +35,7 @@ export default function FinanceSummary() {
   ];
 
   return (
-    <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+    <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
       {cards.map(({ label, value, icon: Icon, color, bg }) => (
         <div
           key={label}

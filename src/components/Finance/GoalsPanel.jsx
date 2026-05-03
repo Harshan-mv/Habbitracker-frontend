@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { Target, Shield, CreditCard, Pencil, ArrowRightLeft } from 'lucide-react';
+import { Target, Shield, CreditCard, Pencil, ArrowRightLeft, RotateCcw } from 'lucide-react';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
@@ -62,7 +62,7 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
 }
 
 export default function GoalsPanel() {
-  const { monthData, updateGoals, addToGoal } = useFinanceStore();
+  const { monthData, updateGoals, addToGoal, resetGoal } = useFinanceStore();
 
   const goals = [
     {
@@ -94,6 +94,7 @@ export default function GoalsPanel() {
         { label: 'Target', field: 'savingsTarget', val: monthData.savingsTarget || 0 },
       ],
       showAdd: true,
+      canReset: true,
     },
     {
       key: 'emergency',
@@ -110,51 +111,51 @@ export default function GoalsPanel() {
         { label: 'Target', field: 'emergencyTarget', val: monthData.emergencyTarget || 0 },
       ],
       showAdd: true,
+      canReset: true,
     },
   ];
 
   return (
-    <div
-      className="finance-card rounded-2xl p-6"
-      style={{ 
-        background: 'var(--bg-card)', 
-        border: '1px solid var(--border)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.2)' 
-      }}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <h3
-          className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          <Target size={16} className="text-accent-blue" />
-          Goal Tracking
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+          <Target size={14} /> Goal Tracking
         </h3>
         {(monthData.carryForward || 0) > 0 && (
-          <span
-            className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5"
-            style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)' }}
-          >
-            <ArrowRightLeft size={12} />
-            Carry Forward: ₹{monthData.carryForward.toLocaleString('en-IN')}
+          <span className="text-[10px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)' }}>
+            <ArrowRightLeft size={10} /> ₹{monthData.carryForward.toLocaleString('en-IN')} Carry
           </span>
         )}
       </div>
 
-      <div className="space-y-8">
+      <div className="grid gap-4">
         {goals.map((g) => {
           const Icon = g.icon;
           const pct = g.max > 0 ? Math.min((g.value / g.max) * 100, 100).toFixed(0) : null;
           
           return (
-            <div key={g.key} className="group">
-              <div className="flex items-center justify-between mb-3">
+            <div 
+              key={g.key} 
+              className="finance-card rounded-2xl p-5 group relative overflow-hidden"
+              style={{ 
+                background: 'var(--bg-card)', 
+                border: '1px solid var(--border)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+            >
+              {/* Status Indicator */}
+              <div 
+                className="absolute top-0 left-0 w-1 h-full" 
+                style={{ background: g.color }}
+              />
+
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
                     style={{ background: g.bg }}
                   >
-                    <Icon size={18} style={{ color: g.color }} />
+                    <Icon size={20} style={{ color: g.color }} />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -167,29 +168,36 @@ export default function GoalsPanel() {
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  {pct !== null ? (
+                <div className="flex items-center gap-3">
+                  {pct !== null && (
                     <span className="text-lg font-black tracking-tighter" style={{ color: g.color }}>
                       {pct}%
                     </span>
-                  ) : (
-                    <span className="text-xs font-bold opacity-40">--</span>
+                  )}
+                  {g.canReset && (
+                    <button
+                      onClick={() => confirm('Reset accumulated total?') && resetGoal(g.key)}
+                      className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 text-red-500"
+                      title="Reset Total"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
                   )}
                 </div>
               </div>
 
               {g.max > 0 && (
-                <div className="mb-3">
+                <div className="mb-4">
                   <ProgressBar value={g.value} max={g.max} color={g.color} />
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+              <div className="flex items-center justify-between mt-2 flex-wrap gap-3">
                 <div className="flex flex-col">
                   <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
                     {g.subtitle}
                   </span>
-                  <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-4 mt-2">
                     {g.editFields.map((ef) => (
                       <div key={ef.field} className="flex flex-col">
                         <span className="text-[9px] uppercase tracking-tighter opacity-50 mb-0.5">
@@ -207,17 +215,17 @@ export default function GoalsPanel() {
                 </div>
 
                 {g.showAdd && (
-                  <div className="flex items-center gap-1.5 ml-auto">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => addToGoal(g.key, 1000)}
-                      className="px-2 py-1 rounded-md text-[10px] font-bold hover:brightness-125 transition-all"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
                       style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
                     >
                       +1k
                     </button>
                     <button
                       onClick={() => addToGoal(g.key, 5000)}
-                      className="px-2 py-1 rounded-md text-[10px] font-bold hover:brightness-125 transition-all"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
                       style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
                     >
                       +5k

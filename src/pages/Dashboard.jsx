@@ -76,7 +76,7 @@ export default function Dashboard() {
               border: activeTab === 'finance' ? '1px solid var(--accent-purple)' : '1px solid transparent'
             }}
           >
-            Finance
+            Finances
           </button>
         </nav>
 

@@ -30,9 +30,9 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
   if (editing) {
     return (
       <div className="flex items-center gap-1">
-        <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{prefix}</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{prefix}</span>
         <input
-          className="finance-input w-20 text-sm"
+          className="finance-input w-24 text-base font-bold"
           type="number"
           value={val}
           onChange={(e) => setVal(e.target.value)}
@@ -49,11 +49,11 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
       className="flex items-center gap-1 group"
       onClick={() => { setVal(value); setEditing(true); }}
     >
-      <span className="text-sm font-bold" style={{ color }}>
+      <span className="text-base font-bold" style={{ color }}>
         {prefix}{Number(value).toLocaleString('en-IN')}
       </span>
       <Pencil
-        size={10}
+        size={12}
         className="opacity-0 group-hover:opacity-100 transition-opacity"
         style={{ color: 'var(--text-muted)' }}
       />
@@ -74,6 +74,7 @@ export default function GoalsPanel() {
       value: monthData.emiTotalMonths - monthData.emiMonthsLeft,
       max: monthData.emiTotalMonths,
       subtitle: `${monthData.emiMonthsLeft} months remaining`,
+      align: 'right',
       editFields: [
         { label: 'Months Left', field: 'emiMonthsLeft', val: monthData.emiMonthsLeft },
         { label: 'Total Months', field: 'emiTotalMonths', val: monthData.emiTotalMonths },
@@ -89,6 +90,7 @@ export default function GoalsPanel() {
       value: monthData.savingsAchieved,
       max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
       subtitle: `Target: ₹${(monthData.savingsTarget || 0).toLocaleString('en-IN')} · Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')}`,
+      align: 'left',
       editFields: [
         { label: 'This Month', field: 'savingsGoal', val: monthData.savingsGoal || 0 },
         { label: 'Target', field: 'savingsTarget', val: monthData.savingsTarget || 0 },
@@ -106,6 +108,7 @@ export default function GoalsPanel() {
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
       subtitle: `Target: ₹${(monthData.emergencyTarget || 0).toLocaleString('en-IN')} · Total: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')}`,
+      align: 'center',
       editFields: [
         { label: 'This Month', field: 'emergencyFund', val: monthData.emergencyFund || 0 },
         { label: 'Target', field: 'emergencyTarget', val: monthData.emergencyTarget || 0 },
@@ -192,15 +195,25 @@ export default function GoalsPanel() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-2 flex-wrap gap-3">
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                    {g.subtitle}
-                  </span>
-                  <div className="flex items-center gap-4 mt-2">
+              <div className={`flex flex-col mt-2 gap-3 ${
+                g.align === 'right' ? 'items-end' : 
+                g.align === 'center' ? 'items-center' : 'items-start'
+              }`}>
+                <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>
+                  {g.subtitle}
+                </span>
+                
+                <div className={`flex items-center gap-6 w-full ${
+                  g.align === 'right' ? 'justify-end' : 
+                  g.align === 'center' ? 'justify-center' : 'justify-start'
+                }`}>
+                  <div className="flex items-center gap-6">
                     {g.editFields.map((ef) => (
-                      <div key={ef.field} className="flex flex-col">
-                        <span className="text-[9px] uppercase tracking-tighter opacity-50 mb-0.5">
+                      <div key={ef.field} className={`flex flex-col ${
+                        g.align === 'right' ? 'items-end' : 
+                        g.align === 'center' ? 'items-center' : 'items-start'
+                      }`}>
+                        <span className="text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">
                           {ef.label}
                         </span>
                         <EditableValue
@@ -212,26 +225,26 @@ export default function GoalsPanel() {
                       </div>
                     ))}
                   </div>
-                </div>
 
-                {g.showAdd && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => addToGoal(g.key, 1000)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                      style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
-                    >
-                      +1k
-                    </button>
-                    <button
-                      onClick={() => addToGoal(g.key, 5000)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                      style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
-                    >
-                      +5k
-                    </button>
-                  </div>
-                )}
+                  {g.showAdd && (
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => addToGoal(g.key, 1000)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
+                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                      >
+                        +1k
+                      </button>
+                      <button
+                        onClick={() => addToGoal(g.key, 5000)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
+                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                      >
+                        +5k
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );

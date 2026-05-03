@@ -174,10 +174,38 @@ const useFinanceStore = create((set, get) => {
     getTotals: () => {
       const { monthData } = get();
       const totalIncome = monthData.incomes.reduce((s, i) => s + i.amount, 0) + (monthData.carryForward || 0);
-      const totalExpenses = monthData.expenses.reduce((s, e) => s + e.amount, 0);
-      const totalAllocated = (monthData.savingsGoal || 0) + (monthData.emergencyFund || 0);
-      const remaining = totalIncome - totalExpenses - totalAllocated;
-      return { totalIncome, totalExpenses, totalAllocated, remaining };
+      
+      // Bifurcate expenses
+      const emiExpenses = monthData.expenses
+        .filter(e => e.category === 'EMI')
+        .reduce((s, e) => s + e.amount, 0);
+        
+      const regularExpenses = monthData.expenses
+        .filter(e => e.category !== 'EMI' && e.category !== 'Investment' && e.category !== 'Emergency Fund')
+        .reduce((s, e) => s + e.amount, 0);
+
+      const investmentExpenses = monthData.expenses
+        .filter(e => e.category === 'Investment')
+        .reduce((s, e) => s + e.amount, 0);
+
+      // Allocations from the Goal Tracker fields
+      const savingsAlloc = monthData.savingsGoal || 0;
+      const emergencyAlloc = monthData.emergencyFund || 0;
+
+      const totalSpent = emiExpenses + regularExpenses + investmentExpenses;
+      const totalAllocated = savingsAlloc + emergencyAlloc;
+      
+      const remaining = totalIncome - totalSpent - totalAllocated;
+
+      return { 
+        totalIncome, 
+        totalExpenses: totalSpent,
+        regularExpenses,
+        emiExpenses,
+        investmentExpenses,
+        totalAllocated,
+        remaining 
+      };
     },
 
     getCategoryBreakdown: () => {

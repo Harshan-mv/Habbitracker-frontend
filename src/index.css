@@ -82,3 +82,81 @@ html {
   animation: skeleton-shimmer 1.5s infinite ease-in-out;
   border-radius: 4px;
 }
+
+/* ─── Finance Module Tokens ─── */
+:root {
+  --accent-red: #f87171;
+  --accent-blue: #60a5fa;
+  --accent-purple: #a78bfa;
+}
+.light {
+  --accent-red: #ef4444;
+  --accent-blue: #3b82f6;
+  --accent-purple: #7c3aed;
+}
+
+/* ─── Finance Inputs ─── */
+.finance-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.finance-input:focus {
+  border-color: var(--accent-green);
+}
+.finance-input::placeholder {
+  color: var(--text-muted);
+}
+.finance-input option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* ─── Finance Icon Buttons ─── */
+.finance-icon-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  background: transparent;
+}
+.finance-icon-btn.green {
+  color: var(--accent-green);
+}
+.finance-icon-btn.green:hover {
+  background: rgba(74, 222, 128, 0.15);
+}
+.finance-icon-btn.red {
+  color: var(--accent-red);
+}
+.finance-icon-btn.red:hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+.finance-icon-btn.muted {
+  color: var(--text-muted);
+}
+.finance-icon-btn.muted:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+/* ─── Finance Card Hover ─── */
+.finance-card {
+  transition: box-shadow 0.3s, border-color 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.finance-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}

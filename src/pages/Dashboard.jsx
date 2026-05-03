@@ -6,6 +6,7 @@ import HabitList from '../components/HabitList';
 import HeatmapGrid from '../components/HeatmapGrid';
 import StatPanel from '../components/StatPanel';
 import TaskManager from '../components/Tasks/TaskManager';
+import FinanceManager from '../components/Finance/FinanceManager';
 import { useState } from 'react';
 
 export default function Dashboard() {
@@ -49,8 +50,8 @@ export default function Dashboard() {
             className={`px-6 py-2.5 rounded-xl text-base font-bold transition-all ${activeTab === 'habits' ? 'bg-white dark:bg-gray-700 shadow-lg text-primary' : 'text-muted hover:text-secondary'}`}
             style={{ 
               backgroundColor: activeTab === 'habits' ? 'var(--bg-secondary)' : 'transparent',
-              color: activeTab === 'habits' ? 'var(--text-primary)' : 'var(--text-muted)',
-              border: activeTab === 'habits' ? '1px solid var(--border)' : '1px solid transparent'
+              color: activeTab === 'habits' ? 'var(--accent-green)' : 'var(--text-muted)',
+              border: activeTab === 'habits' ? '1px solid var(--accent-green)' : '1px solid transparent'
             }}
           >
             Habits
@@ -60,11 +61,22 @@ export default function Dashboard() {
             className={`px-6 py-2.5 rounded-xl text-base font-bold transition-all ${activeTab === 'tasks' ? 'bg-white dark:bg-gray-700 shadow-lg text-primary' : 'text-muted hover:text-secondary'}`}
             style={{ 
               backgroundColor: activeTab === 'tasks' ? 'var(--bg-secondary)' : 'transparent',
-              color: activeTab === 'tasks' ? 'var(--text-primary)' : 'var(--text-muted)',
-              border: activeTab === 'tasks' ? '1px solid var(--border)' : '1px solid transparent'
+              color: activeTab === 'tasks' ? 'var(--accent-blue)' : 'var(--text-muted)',
+              border: activeTab === 'tasks' ? '1px solid var(--accent-blue)' : '1px solid transparent'
             }}
           >
             To Do
+          </button>
+          <button 
+            onClick={() => setActiveTab('finance')}
+            className={`px-6 py-2.5 rounded-xl text-base font-bold transition-all ${activeTab === 'finance' ? 'bg-white dark:bg-gray-700 shadow-lg text-primary' : 'text-muted hover:text-secondary'}`}
+            style={{ 
+              backgroundColor: activeTab === 'finance' ? 'var(--bg-secondary)' : 'transparent',
+              color: activeTab === 'finance' ? 'var(--accent-purple)' : 'var(--text-muted)',
+              border: activeTab === 'finance' ? '1px solid var(--accent-purple)' : '1px solid transparent'
+            }}
+          >
+            Finance
           </button>
         </nav>
 
@@ -128,8 +140,10 @@ export default function Dashboard() {
                 <StatPanel />
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'tasks' ? (
             <TaskManager />
+          ) : (
+            <FinanceManager />
           )}
         </div>
       </main>

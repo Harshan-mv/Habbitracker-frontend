@@ -218,20 +218,7 @@ const useFinanceStore = create((set, get) => {
         .reduce((s, e) => s + e.amount, 0);
     },
 
-    // 6-month cashflow history from backend
-    getCashflowHistory: async () => {
-      try {
-        const res = await api.get('/finance/history/6');
-        return res.data.map((m) => ({
-          label: new Date(m.month + '-01').toLocaleString('default', { month: 'short' }),
-          savings: m.savings,
-          income: m.income,
-          expenses: m.expenses,
-        }));
-      } catch {
-        return [];
-      }
-    },
+
   };
 });
 

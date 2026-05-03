@@ -14,6 +14,7 @@ const defaultMonthData = () => ({
   realizedPnL: 0,
   charges: 0,
   savingsGoal: 0,
+  savingsTarget: 0,
   savingsAchieved: 0,
   emergencyFund: 0,
   emergencyAchieved: 0,
@@ -150,6 +151,23 @@ const useFinanceStore = create((set, get) => {
         numFields[k] = Number(v);
       }
       get()._update((d) => ({ ...d, ...numFields }));
+    },
+
+    addToGoal: (type, amount) => {
+      const amt = Number(amount);
+      if (type === 'savings') {
+        get()._update((d) => ({
+          ...d,
+          savingsGoal: (d.savingsGoal || 0) + amt,
+          savingsAchieved: (d.savingsAchieved || 0) + amt,
+        }));
+      } else if (type === 'emergency') {
+        get()._update((d) => ({
+          ...d,
+          emergencyFund: (d.emergencyFund || 0) + amt,
+          emergencyAchieved: (d.emergencyAchieved || 0) + amt,
+        }));
+      }
     },
 
     // ── Computed ──────────────────────────────────────────

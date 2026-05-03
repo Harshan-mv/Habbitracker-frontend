@@ -62,7 +62,7 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
 }
 
 export default function GoalsPanel() {
-  const { monthData, updateGoals } = useFinanceStore();
+  const { monthData, updateGoals, addToGoal } = useFinanceStore();
 
   const goals = [
     {
@@ -87,12 +87,13 @@ export default function GoalsPanel() {
       color: 'var(--accent-green)',
       bg: 'rgba(74,222,128,0.1)',
       value: monthData.savingsAchieved,
-      max: monthData.savingsGoal > 0 ? undefined : undefined,
-      subtitle: `This month: ₹${(monthData.savingsGoal || 0).toLocaleString('en-IN')} · Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')}`,
+      max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
+      subtitle: `Target: ₹${(monthData.savingsTarget || 0).toLocaleString('en-IN')} · Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')}`,
       editFields: [
         { label: 'This Month', field: 'savingsGoal', val: monthData.savingsGoal || 0 },
+        { label: 'Target', field: 'savingsTarget', val: monthData.savingsTarget || 0 },
       ],
-      showAccumulated: true,
+      showAdd: true,
     },
     {
       key: 'emergency',
@@ -103,83 +104,126 @@ export default function GoalsPanel() {
       bg: 'rgba(167,139,250,0.1)',
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
-      subtitle: `This month: ₹${(monthData.emergencyFund || 0).toLocaleString('en-IN')} · Total: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')} · Target: ₹${(monthData.emergencyTarget || 0).toLocaleString('en-IN')}`,
+      subtitle: `Target: ₹${(monthData.emergencyTarget || 0).toLocaleString('en-IN')} · Total: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')}`,
       editFields: [
         { label: 'This Month', field: 'emergencyFund', val: monthData.emergencyFund || 0 },
         { label: 'Target', field: 'emergencyTarget', val: monthData.emergencyTarget || 0 },
       ],
+      showAdd: true,
     },
   ];
 
   return (
     <div
-      className="finance-card rounded-2xl p-4"
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      className="finance-card rounded-2xl p-6"
+      style={{ 
+        background: 'var(--bg-card)', 
+        border: '1px solid var(--border)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.2)' 
+      }}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-6">
         <h3
-          className="text-xs font-bold uppercase tracking-wider"
-          style={{ color: 'var(--text-muted)' }}
+          className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+          style={{ color: 'var(--text-primary)' }}
         >
+          <Target size={16} className="text-accent-blue" />
           Goal Tracking
         </h3>
         {(monthData.carryForward || 0) > 0 && (
           <span
-            className="text-[10px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1"
+            className="text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5"
             style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)' }}
           >
-            <ArrowRightLeft size={10} />
+            <ArrowRightLeft size={12} />
             Carry Forward: ₹{monthData.carryForward.toLocaleString('en-IN')}
           </span>
         )}
       </div>
-      <div className="space-y-4">
+
+      <div className="space-y-8">
         {goals.map((g) => {
           const Icon = g.icon;
           const pct = g.max > 0 ? Math.min((g.value / g.max) * 100, 100).toFixed(0) : null;
+          
           return (
-            <div key={g.key}>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
+            <div key={g.key} className="group">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
                     style={{ background: g.bg }}
                   >
-                    <Icon size={13} style={{ color: g.color }} />
+                    <Icon size={18} style={{ color: g.color }} />
                   </div>
                   <div>
-                    <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                       {g.label}
-                    </span>
+                    </h4>
                     {g.description && (
-                      <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-[10px] opacity-60" style={{ color: 'var(--text-secondary)' }}>
                         {g.description}
                       </p>
                     )}
                   </div>
                 </div>
-                {pct !== null && (
-                  <span className="text-xs font-bold" style={{ color: g.color }}>
-                    {pct}%
-                  </span>
-                )}
-              </div>
-              {g.max > 0 && <ProgressBar value={g.value} max={g.max} color={g.color} />}
-              <div className="flex items-center justify-between mt-1.5 flex-wrap gap-1">
-                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                  {g.subtitle}
-                </span>
-                <div className="flex items-center gap-2">
-                  {g.editFields.map((ef) => (
-                    <EditableValue
-                      key={ef.field}
-                      value={ef.val}
-                      color="var(--text-secondary)"
-                      prefix={ef.label === 'Months Left' || ef.label === 'Total Months' ? '' : '₹'}
-                      onSave={(v) => updateGoals({ [ef.field]: v })}
-                    />
-                  ))}
+                <div className="text-right">
+                  {pct !== null ? (
+                    <span className="text-lg font-black tracking-tighter" style={{ color: g.color }}>
+                      {pct}%
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold opacity-40">--</span>
+                  )}
                 </div>
+              </div>
+
+              {g.max > 0 && (
+                <div className="mb-3">
+                  <ProgressBar value={g.value} max={g.max} color={g.color} />
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                    {g.subtitle}
+                  </span>
+                  <div className="flex items-center gap-3 mt-1">
+                    {g.editFields.map((ef) => (
+                      <div key={ef.field} className="flex flex-col">
+                        <span className="text-[9px] uppercase tracking-tighter opacity-50 mb-0.5">
+                          {ef.label}
+                        </span>
+                        <EditableValue
+                          value={ef.val}
+                          color="var(--text-primary)"
+                          prefix={ef.label === 'Months Left' || ef.label === 'Total Months' ? '' : '₹'}
+                          onSave={(v) => updateGoals({ [ef.field]: v })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {g.showAdd && (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button
+                      onClick={() => addToGoal(g.key, 1000)}
+                      className="px-2 py-1 rounded-md text-[10px] font-bold hover:brightness-125 transition-all"
+                      style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                    >
+                      +1k
+                    </button>
+                    <button
+                      onClick={() => addToGoal(g.key, 5000)}
+                      className="px-2 py-1 rounded-md text-[10px] font-bold hover:brightness-125 transition-all"
+                      style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                    >
+                      +5k
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           );

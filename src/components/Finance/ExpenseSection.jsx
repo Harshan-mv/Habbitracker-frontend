@@ -7,7 +7,7 @@ const CATEGORY_COLORS = {
   Transport: '#3b82f6',
   Food: '#ef4444',
   Health: '#10b981',
-  Trading: '#8b5cf6',
+  Investment: '#8b5cf6',
   Entertainment: '#ec4899',
   'Emergency Fund': '#f97316',
   Other: '#6b7280',

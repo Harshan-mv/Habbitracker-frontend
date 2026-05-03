@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../utils/axiosConfig';
 
-const CATEGORIES = ['EMI', 'Transport', 'Food', 'Health', 'Trading', 'Entertainment', 'Emergency Fund', 'Other'];
+const CATEGORIES = ['EMI', 'Transport', 'Food', 'Health', 'Investment', 'Entertainment', 'Emergency Fund', 'Other'];
 
 const getMonthKey = (date) => {
   const d = date || new Date();

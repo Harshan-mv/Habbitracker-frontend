@@ -41,7 +41,7 @@ function DonutChart({ breakdown }) {
 
   return (
     <div className="flex items-center gap-5">
-      <svg width="150" height="150" viewBox="0 0 150 150" className="flex-shrink-0">
+      <svg width="150" height="150" viewBox="0 0 150 150" className="flex-shrink-0" style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.1))' }}>
         {entries.map(([cat, val]) => {
           const fraction = val / total;
           const dashLen = circumference * fraction;
@@ -91,7 +91,7 @@ function DonutChart({ breakdown }) {
           <div key={cat} className="flex items-center gap-2">
             <span
               className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-              style={{ background: CATEGORY_COLORS[cat] || '#6b7280' }}
+              style={{ background: CATEGORY_COLORS[cat] || '#6b7280', boxShadow: `0 0 8px ${CATEGORY_COLORS[cat] || '#6b7280'}` }}
             />
             <span
               className="text-xs flex-1 truncate"
@@ -122,7 +122,6 @@ export default function ChartsPanel() {
       {/* Donut */}
       <div
         className="finance-card rounded-2xl p-4"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
       >
         <h3
           className="text-xs font-bold mb-3 uppercase tracking-wider"

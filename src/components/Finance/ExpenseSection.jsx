@@ -59,17 +59,13 @@ export default function ExpenseSection() {
   return (
     <div
       className="finance-card rounded-2xl p-4"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(248,113,113,0.12)' }}
+            style={{ background: 'rgba(248,113,113,0.12)', boxShadow: '0 0 12px rgba(248,113,113,0.2)' }}
           >
             <ShoppingCart size={15} style={{ color: 'var(--accent-red)' }} />
           </div>
@@ -79,20 +75,20 @@ export default function ExpenseSection() {
         </div>
         <span
           className="text-xs font-semibold px-2 py-1 rounded-lg"
-          style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--accent-red)' }}
+          style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--accent-red)', border: '1px solid rgba(248,113,113,0.2)' }}
         >
           ₹{totalExpenses.toLocaleString('en-IN')}
         </span>
       </div>
 
       {/* List */}
-      <div className="space-y-2 mb-3" style={{ maxHeight: '260px', overflowY: 'auto' }}>
+      <div className="space-y-2 mb-3 pr-1" style={{ maxHeight: '260px', overflowY: 'auto' }}>
         {monthData.expenses.map((exp) =>
           editId === (exp._id || exp.id) ? (
             <div
               key={exp._id || exp.id}
               className="flex items-center gap-2 p-2 rounded-xl flex-wrap"
-              style={{ background: 'var(--bg-hover)' }}
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
             >
               <input
                 className="finance-input flex-1 min-w-[80px]"
@@ -129,15 +125,21 @@ export default function ExpenseSection() {
           ) : (
             <div
               key={exp._id || exp.id}
-              className="flex items-center justify-between p-2.5 rounded-xl group transition-colors"
-              style={{ background: 'var(--bg-primary)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-primary)')}
+              className="flex items-center justify-between p-2.5 rounded-xl group transition-all"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: CATEGORY_COLORS[exp.category] || '#6b7280' }}
+                  style={{ background: CATEGORY_COLORS[exp.category] || '#6b7280', boxShadow: `0 0 8px ${CATEGORY_COLORS[exp.category] || '#6b7280'}` }}
                 />
                 <span
                   className="text-sm font-medium truncate"
@@ -181,7 +183,7 @@ export default function ExpenseSection() {
       {adding ? (
         <div
           className="flex items-center gap-2 p-2 rounded-xl flex-wrap"
-          style={{ background: 'var(--bg-hover)' }}
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
         >
           <input
             className="finance-input flex-1 min-w-[80px]"
@@ -228,14 +230,16 @@ export default function ExpenseSection() {
       ) : (
         <button
           className="flex items-center gap-2 w-full py-2.5 rounded-xl border border-dashed text-xs font-semibold justify-center transition-all"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+          style={{ borderColor: 'var(--glass-border)', color: 'var(--text-muted)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = 'var(--accent-red)';
             e.currentTarget.style.color = 'var(--accent-red)';
+            e.currentTarget.style.background = 'rgba(248,113,113,0.05)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.borderColor = 'var(--glass-border)';
             e.currentTarget.style.color = 'var(--text-muted)';
+            e.currentTarget.style.background = 'transparent';
           }}
           onClick={() => {
             setAdding(true);

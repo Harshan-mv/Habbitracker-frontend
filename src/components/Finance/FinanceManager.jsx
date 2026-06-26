@@ -38,13 +38,13 @@ export default function FinanceManager() {
           <button
             onClick={prevMonth}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
               e.currentTarget.style.color = 'var(--text-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--bg-hover)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
               e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
@@ -52,20 +52,26 @@ export default function FinanceManager() {
           </button>
           <span
             className="text-sm font-semibold px-4 py-1.5 rounded-lg min-w-[140px] text-center"
-            style={{ background: 'var(--bg-hover)', color: 'var(--text-primary)' }}
+            style={{ 
+              background: 'rgba(255,255,255,0.04)', 
+              color: 'var(--text-primary)',
+              border: '1px solid var(--glass-border)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)'
+            }}
           >
             {monthLabel}
           </span>
           <button
             onClick={nextMonth}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}
+            style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
               e.currentTarget.style.color = 'var(--text-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--bg-hover)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
               e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
@@ -78,9 +84,9 @@ export default function FinanceManager() {
       <div className="flex-shrink-0">
         {isLoading ? (
           <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px' }} />
-            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px' }} />
-            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px' }} />
+            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
+            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
+            <Skeleton height="72px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
           </div>
         ) : (
           <FinanceSummary />
@@ -95,13 +101,13 @@ export default function FinanceManager() {
         {isLoading ? (
           <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div className="space-y-4">
-              <Skeleton height="250px" variant="rect" style={{ borderRadius: '16px' }} />
-              <Skeleton height="350px" variant="rect" style={{ borderRadius: '16px' }} />
+              <Skeleton height="250px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
+              <Skeleton height="350px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
             </div>
             <div className="space-y-4">
-              <Skeleton height="300px" variant="rect" style={{ borderRadius: '16px' }} />
-              <Skeleton height="200px" variant="rect" style={{ borderRadius: '16px' }} />
-              <Skeleton height="200px" variant="rect" style={{ borderRadius: '16px' }} />
+              <Skeleton height="300px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
+              <Skeleton height="200px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
+              <Skeleton height="200px" variant="rect" style={{ borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }} />
             </div>
           </div>
         ) : (

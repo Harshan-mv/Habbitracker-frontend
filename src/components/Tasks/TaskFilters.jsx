@@ -13,33 +13,52 @@ export default function TaskFilters({
   return (
     <div className="flex flex-col gap-6 mb-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        {/* Search Bar */}
+        {/* Search Bar – Glass */}
         <div className="relative flex-1 max-w-2xl">
           <input 
             type="text"
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-6 pr-12 py-4 rounded-2xl border text-lg outline-none transition-all focus:border-accent-green focus:shadow-lg focus:scale-[1.01]"
+            className="w-full pl-6 pr-12 py-4 rounded-2xl border text-lg outline-none transition-all focus:scale-[1.01]"
             style={{ 
-              background: 'var(--bg-secondary)', 
-              borderColor: 'var(--border)', 
+              background: 'rgba(255,255,255,0.04)', 
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderColor: 'var(--glass-border)', 
               color: 'var(--text-primary)',
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+              boxShadow: 'var(--glass-shadow), var(--glass-inset-shadow)',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-green)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(74,222,128,0.15), var(--glass-inset-shadow)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--glass-border)';
+              e.currentTarget.style.boxShadow = 'var(--glass-shadow), var(--glass-inset-shadow)';
             }}
           />
-          <Search size={22} className="absolute right-6 top-1/2 -translate-y-1/2 text-muted pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+          <Search size={22} className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
         </div>
 
         <div className="flex items-center gap-6">
-          {/* Status & Priority Filters */}
-          <div className="flex items-center gap-4 bg-hover p-2 rounded-2xl border border-border" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border)' }}>
+          {/* Status & Priority Filters – Glass */}
+          <div
+            className="flex items-center gap-4 p-2 rounded-2xl"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: 'var(--glass-inset-shadow)',
+            }}
+          >
             <div className="flex flex-col px-3">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-muted mb-0.5" style={{ color: 'var(--text-muted)' }}>Status</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Status</span>
               <select 
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="bg-transparent border-none text-sm font-bold outline-none cursor-pointer hover:text-accent-green transition-colors"
+                className="bg-transparent border-none text-sm font-bold outline-none cursor-pointer transition-colors"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <option value="All">All Status</option>
@@ -50,14 +69,14 @@ export default function TaskFilters({
               </select>
             </div>
             
-            <div className="w-[1px] h-8 bg-border" style={{ background: 'var(--border)' }} />
+            <div className="w-[1px] h-8" style={{ background: 'var(--glass-border)' }} />
 
             <div className="flex flex-col px-3">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-muted mb-0.5" style={{ color: 'var(--text-muted)' }}>Priority</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Priority</span>
               <select 
                 value={filters.priority}
                 onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                className="bg-transparent border-none text-sm font-bold outline-none cursor-pointer hover:text-accent-green transition-colors"
+                className="bg-transparent border-none text-sm font-bold outline-none cursor-pointer transition-colors"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <option value="All">All Priority</option>
@@ -68,18 +87,24 @@ export default function TaskFilters({
             </div>
           </div>
 
-          {/* View Toggle */}
-          <div className="flex items-center bg-hover p-1.5 rounded-2xl border border-border" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border)' }}>
+          {/* View Toggle – Glass */}
+          <div
+            className="flex items-center p-1.5 rounded-2xl"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid var(--glass-border)',
+            }}
+          >
             <button 
               onClick={() => setView('list')}
-              className={clsx(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold text-sm",
-                view === 'list' ? "bg-white dark:bg-gray-700 shadow-md text-primary" : "text-muted hover:text-secondary"
-              )}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold text-sm"
               style={{ 
-                backgroundColor: view === 'list' ? 'var(--bg-secondary)' : 'transparent',
+                backgroundColor: view === 'list' ? 'rgba(255,255,255,0.08)' : 'transparent',
                 color: view === 'list' ? 'var(--text-primary)' : 'var(--text-muted)',
-                border: view === 'list' ? '1px solid var(--border)' : '1px solid transparent'
+                border: view === 'list' ? '1px solid var(--glass-border)' : '1px solid transparent',
+                boxShadow: view === 'list' ? 'var(--glass-inset-shadow)' : 'none',
               }}
             >
               <List size={20} />
@@ -87,14 +112,12 @@ export default function TaskFilters({
             </button>
             <button 
               onClick={() => setView('kanban')}
-              className={clsx(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold text-sm",
-                view === 'kanban' ? "bg-white dark:bg-gray-700 shadow-md text-primary" : "text-muted hover:text-secondary"
-              )}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold text-sm"
               style={{ 
-                backgroundColor: view === 'kanban' ? 'var(--bg-secondary)' : 'transparent',
+                backgroundColor: view === 'kanban' ? 'rgba(255,255,255,0.08)' : 'transparent',
                 color: view === 'kanban' ? 'var(--text-primary)' : 'var(--text-muted)',
-                border: view === 'kanban' ? '1px solid var(--border)' : '1px solid transparent'
+                border: view === 'kanban' ? '1px solid var(--glass-border)' : '1px solid transparent',
+                boxShadow: view === 'kanban' ? 'var(--glass-inset-shadow)' : 'none',
               }}
             >
               <LayoutGrid size={20} />

@@ -24,7 +24,12 @@ export default function TaskList({ tasks }) {
             <div 
               key={i} 
               className="mb-3 p-4 rounded-2xl flex items-center gap-4"
-              style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)' }}
+              style={{ 
+                background: 'rgba(255,255,255,0.04)', 
+                border: '1px solid var(--glass-border)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)'
+              }}
             >
               <Skeleton variant="circle" width="20px" height="20px" />
               <div className="flex-1">
@@ -69,12 +74,18 @@ export default function TaskList({ tasks }) {
       {tasks.length > 0 && (
         <div 
           className="mt-4 p-4 rounded-xl flex items-center justify-between"
-          style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)' }}
+          style={{ 
+            background: 'rgba(255,255,255,0.04)', 
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: 'var(--glass-inset-shadow)'
+          }}
         >
           <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
             Total Estimated Spend
           </span>
-          <span className="text-xl font-bold" style={{ color: 'var(--accent-green)' }}>
+          <span className="text-xl font-bold" style={{ color: 'var(--accent-green)', textShadow: '0 0 12px rgba(74,222,128,0.3)' }}>
             {currency}{totalBudget.toLocaleString()}
           </span>
         </div>

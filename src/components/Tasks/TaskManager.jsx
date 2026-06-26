@@ -58,18 +58,29 @@ export default function TaskManager() {
 
       <button 
         onClick={handleAddTask}
-        className="mt-6 flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 border-dashed border-border hover:border-accent-green hover:bg-accent-green/5 text-muted hover:text-accent-green transition-all group font-semibold"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+        className="mt-6 flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 border-dashed transition-all group font-semibold"
+        style={{ 
+          borderColor: 'var(--glass-border)', 
+          color: 'var(--text-muted)',
+          background: 'rgba(255,255,255,0.02)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = 'var(--accent-green)';
           e.currentTarget.style.color = 'var(--accent-green)';
+          e.currentTarget.style.background = 'rgba(74,222,128,0.05)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = 'var(--border)';
+          e.currentTarget.style.borderColor = 'var(--glass-border)';
           e.currentTarget.style.color = 'var(--text-muted)';
+          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
         }}
       >
-        <div className="w-8 h-8 rounded-full bg-border group-hover:bg-accent-green/20 flex items-center justify-center transition-colors">
+        <div 
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+          style={{ background: 'rgba(255,255,255,0.08)' }}
+        >
           <Plus size={20} />
         </div>
         Add New Task

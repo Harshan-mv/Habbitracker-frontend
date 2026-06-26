@@ -11,12 +11,11 @@ export default function TradingPanel() {
   return (
     <div
       className="finance-card rounded-2xl p-4"
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
     >
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: 'rgba(167,139,250,0.12)' }}
+          style={{ background: 'rgba(167,139,250,0.12)', boxShadow: '0 0 12px rgba(167,139,250,0.2)' }}
         >
           <BarChart3 size={15} style={{ color: 'var(--accent-purple)' }} />
         </div>
@@ -33,7 +32,7 @@ export default function TradingPanel() {
             ₹{capital.toLocaleString('en-IN')}
           </span>
         </div>
-        <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0' }} />
+        <div style={{ borderTop: '1px solid var(--glass-border)', margin: '4px 0' }} />
 
         {/* Realized P&L */}
         <div className="flex items-center justify-between">
@@ -61,13 +60,14 @@ export default function TradingPanel() {
           />
         </div>
 
-        <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0' }} />
+        <div style={{ borderTop: '1px solid var(--glass-border)', margin: '4px 0' }} />
 
         {/* Net P&L */}
         <div
           className="flex items-center justify-between p-3 rounded-xl"
           style={{
             background: isProfit ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
+            border: `1px solid ${isProfit ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)'}`,
           }}
         >
           <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -75,7 +75,7 @@ export default function TradingPanel() {
           </span>
           <span
             className="text-base font-extrabold"
-            style={{ color: isProfit ? 'var(--accent-green)' : 'var(--accent-red)' }}
+            style={{ color: isProfit ? 'var(--accent-green)' : 'var(--accent-red)', textShadow: `0 0 12px ${isProfit ? 'var(--accent-green)' : 'var(--accent-red)'}40` }}
           >
             {isProfit ? '+' : '-'}₹{Math.abs(netPnL).toLocaleString('en-IN')}
           </span>

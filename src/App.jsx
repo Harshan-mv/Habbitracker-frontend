@@ -13,7 +13,19 @@ function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  return user ? <Dashboard /> : <AuthPage />;
+  return (
+    <>
+      {/* Floating gradient orbs for glassmorphism depth */}
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+      <div className="orb orb-3" />
+
+      {/* Main app content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {user ? <Dashboard /> : <AuthPage />}
+      </div>
+    </>
+  );
 }
 
 export default App;

@@ -16,21 +16,21 @@ export default function FinanceSummary() {
       value: fmt(totalIncome),
       icon: TrendingUp,
       color: 'var(--accent-green)',
-      bg: 'rgba(74,222,128,0.08)',
+      bg: 'rgba(74,222,128,0.1)',
     },
     {
       label: 'Total Expenses',
       value: fmt(totalExpenses),
       icon: TrendingDown,
       color: 'var(--accent-red)',
-      bg: 'rgba(248,113,113,0.08)',
+      bg: 'rgba(248,113,113,0.1)',
     },
     {
       label: 'Remaining',
       value: (remaining < 0 ? '-' : '') + fmt(remaining),
       icon: Wallet,
       color: remaining >= 0 ? 'var(--accent-green)' : 'var(--accent-red)',
-      bg: remaining >= 0 ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
+      bg: remaining >= 0 ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)',
     },
   ];
 
@@ -39,16 +39,15 @@ export default function FinanceSummary() {
       {cards.map(({ label, value, icon: Icon, color, bg }) => (
         <div
           key={label}
-          className="rounded-2xl p-4 flex items-center gap-3 transition-all"
+          className="rounded-2xl p-4 flex items-center gap-3 transition-all finance-card"
           style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
           }}
         >
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: bg }}
+            style={{ background: bg, boxShadow: `0 0 12px ${bg}` }}
           >
             <Icon size={18} style={{ color }} />
           </div>
@@ -56,7 +55,7 @@ export default function FinanceSummary() {
             <p className="text-xs font-medium truncate" style={{ color: 'var(--text-muted)' }}>
               {label}
             </p>
-            <p className="text-lg font-bold leading-tight" style={{ color }}>
+            <p className="text-lg font-bold leading-tight" style={{ color, textShadow: `0 0 12px ${color}40` }}>
               {value}
             </p>
           </div>

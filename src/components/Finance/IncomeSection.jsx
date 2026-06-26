@@ -43,17 +43,13 @@ export default function IncomeSection() {
   return (
     <div
       className="finance-card rounded-2xl p-4"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(74,222,128,0.12)' }}
+            style={{ background: 'rgba(74,222,128,0.12)', boxShadow: '0 0 12px rgba(74,222,128,0.2)' }}
           >
             <IndianRupee size={15} style={{ color: 'var(--accent-green)' }} />
           </div>
@@ -61,7 +57,7 @@ export default function IncomeSection() {
             Income Sources
           </h3>
         </div>
-        <span className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)' }}>
+        <span className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)', border: '1px solid rgba(74,222,128,0.2)' }}>
           ₹{totalIncome.toLocaleString('en-IN')}
         </span>
       </div>
@@ -73,7 +69,7 @@ export default function IncomeSection() {
             <div
               key={inc._id || inc.id}
               className="flex items-center gap-2 p-2 rounded-xl"
-              style={{ background: 'var(--bg-hover)' }}
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
             >
               <input
                 className="finance-input flex-1"
@@ -99,10 +95,16 @@ export default function IncomeSection() {
           ) : (
             <div
               key={inc._id || inc.id}
-              className="flex items-center justify-between p-2.5 rounded-xl group transition-colors"
-              style={{ background: 'var(--bg-primary)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-primary)')}
+              className="flex items-center justify-between p-2.5 rounded-xl group transition-all"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.borderColor = 'var(--glass-border)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
             >
               <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                 {inc.name}
@@ -131,7 +133,7 @@ export default function IncomeSection() {
 
       {/* Add row */}
       {adding ? (
-        <div className="flex items-center gap-2 p-2 rounded-xl" style={{ background: 'var(--bg-hover)' }}>
+        <div className="flex items-center gap-2 p-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}>
           <input
             className="finance-input flex-1"
             value={name}
@@ -158,14 +160,16 @@ export default function IncomeSection() {
       ) : (
         <button
           className="flex items-center gap-2 w-full py-2.5 rounded-xl border border-dashed text-xs font-semibold justify-center transition-all"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+          style={{ borderColor: 'var(--glass-border)', color: 'var(--text-muted)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = 'var(--accent-green)';
             e.currentTarget.style.color = 'var(--accent-green)';
+            e.currentTarget.style.background = 'rgba(74,222,128,0.05)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.borderColor = 'var(--glass-border)';
             e.currentTarget.style.color = 'var(--text-muted)';
+            e.currentTarget.style.background = 'transparent';
           }}
           onClick={() => { setAdding(true); setName(''); setAmount(''); }}
         >

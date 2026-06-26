@@ -22,6 +22,8 @@ const defaultMonthData = () => ({
   emiMonthsLeft: 0,
   emiTotalMonths: 0,
   carryForward: 0,
+  prevSavingsAchieved: 0,
+  prevEmergencyAchieved: 0,
 });
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -150,31 +152,49 @@ const useFinanceStore = create((set, get) => {
       for (const [k, v] of Object.entries(fields)) {
         numFields[k] = Number(v);
       }
-      get()._update((d) => ({ ...d, ...numFields }));
+      get()._update((d) => {
+        const newData = { ...d, ...numFields };
+        
+        // Recalculate totals dynamically
+        if ('savingsGoal' in numFields) {
+          newData.savingsAchieved = (newData.prevSavingsAchieved || 0) + newData.savingsGoal;
+        }
+        if ('emergencyFund' in numFields) {
+          newData.emergencyAchieved = (newData.prevEmergencyAchieved || 0) + newData.emergencyFund;
+        }
+        
+        return newData;
+      });
     },
 
     addToGoal: (type, amount) => {
       const amt = Number(amount);
       if (type === 'savings') {
-        get()._update((d) => ({
-          ...d,
-          savingsGoal: (d.savingsGoal || 0) + amt,
-          savingsAchieved: (d.savingsAchieved || 0) + amt,
-        }));
+        get()._update((d) => {
+          const newGoal = (d.savingsGoal || 0) + amt;
+          return {
+            ...d,
+            savingsGoal: newGoal,
+            savingsAchieved: (d.prevSavingsAchieved || 0) + newGoal,
+          };
+        });
       } else if (type === 'emergency') {
-        get()._update((d) => ({
-          ...d,
-          emergencyFund: (d.emergencyFund || 0) + amt,
-          emergencyAchieved: (d.emergencyAchieved || 0) + amt,
-        }));
+        get()._update((d) => {
+          const newGoal = (d.emergencyFund || 0) + amt;
+          return {
+            ...d,
+            emergencyFund: newGoal,
+            emergencyAchieved: (d.prevEmergencyAchieved || 0) + newGoal,
+          };
+        });
       }
     },
 
     resetGoal: (type) => {
       if (type === 'savings') {
-        get()._update((d) => ({ ...d, savingsAchieved: 0 }));
+        get()._update((d) => ({ ...d, prevSavingsAchieved: 0, savingsAchieved: d.savingsGoal || 0 }));
       } else if (type === 'emergency') {
-        get()._update((d) => ({ ...d, emergencyAchieved: 0 }));
+        get()._update((d) => ({ ...d, prevEmergencyAchieved: 0, emergencyAchieved: d.emergencyFund || 0 }));
       }
     },
 

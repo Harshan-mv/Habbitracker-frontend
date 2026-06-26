@@ -15,7 +15,7 @@ export default function StatPanel() {
       {/* ── Header – exact same height as date-header row ── */}
       <div
         className="flex items-end pb-3 px-3 gap-2"
-        style={{ height: `${HEADER_HEIGHT}px`, borderBottom: '1px solid var(--border)' }}
+        style={{ height: `${HEADER_HEIGHT}px`, borderBottom: '1px solid var(--glass-border)' }}
       >
         <div className="flex-1 text-center">
           <div className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>current</div>
@@ -38,7 +38,7 @@ export default function StatPanel() {
           <div
             key={i}
             className="flex items-center px-3 gap-2 flex-shrink-0"
-            style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--border)' }}
+            style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--glass-border)' }}
           >
             <div className="flex-1 flex items-center justify-center">
               <Skeleton variant="circle" width="32px" height="32px" />
@@ -60,14 +60,19 @@ export default function StatPanel() {
               className="flex items-center px-3 gap-2 flex-shrink-0"
               style={{
                 height: `${ROW_HEIGHT}px`,
-                borderBottom: '1px solid var(--border)',
+                borderBottom: '1px solid var(--glass-border)',
               }}
             >
               {/* Current */}
               <div className="flex-1 flex items-center justify-center">
                 <div
                   className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-                  style={{ borderColor: habit.color, color: habit.color }}
+                  style={{
+                    borderColor: `${habit.color}80`,
+                    color: habit.color,
+                    background: `${habit.color}10`,
+                    boxShadow: current > 0 ? `0 0 10px ${habit.color}25` : 'none',
+                  }}
                 >
                   {current}
                 </div>
@@ -77,7 +82,12 @@ export default function StatPanel() {
               <div className="flex-1 flex items-center justify-center">
                 <div
                   className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold"
-                  style={{ borderColor: habit.color, color: habit.color }}
+                  style={{
+                    borderColor: `${habit.color}80`,
+                    color: habit.color,
+                    background: `${habit.color}10`,
+                    boxShadow: longest > 0 ? `0 0 10px ${habit.color}25` : 'none',
+                  }}
                 >
                   {longest}
                 </div>

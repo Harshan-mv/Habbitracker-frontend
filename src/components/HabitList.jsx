@@ -32,7 +32,7 @@ export default function HabitList() {
             <div
               key={i}
               className="flex items-center gap-2 py-3"
-              style={{ borderBottom: '1px solid var(--border)', height: '56px' }}
+              style={{ borderBottom: '1px solid var(--glass-border)', height: '56px' }}
             >
               <Skeleton variant="circle" width="12px" height="12px" className="flex-shrink-0" />
               <Skeleton width="100px" height="14px" />
@@ -42,12 +42,21 @@ export default function HabitList() {
           habits.map((habit) => (
             <div
               key={habit._id}
-              className="flex items-center gap-2 group py-3"
-              style={{ borderBottom: '1px solid var(--border)', height: '56px' }}
+              className="flex items-center gap-2 group py-3 transition-all duration-200"
+              style={{ borderBottom: '1px solid var(--glass-border)', height: '56px' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
             >
               {/* Color dot + name */}
               <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: habit.color }} />
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ background: habit.color, boxShadow: `0 0 8px ${habit.color}40` }}
+                />
                 <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                   {habit.name}
                 </span>
@@ -83,14 +92,14 @@ export default function HabitList() {
                   <button
                     onClick={() => handleDelete(habit._id)}
                     className="px-2 py-0.5 rounded text-xs font-medium"
-                    style={{ background: '#ef4444', color: '#fff' }}
+                    style={{ background: '#ef4444', color: '#fff', boxShadow: '0 0 12px rgba(239,68,68,0.3)' }}
                   >
                     Delete
                   </button>
                   <button
                     onClick={() => setConfirmDelete(null)}
                     className="px-2 py-0.5 rounded text-xs"
-                    style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                    style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}
                   >
                     No
                   </button>
@@ -105,10 +114,16 @@ export default function HabitList() {
       <div className="pt-2 pb-1" style={{ height: '40px' }}>
         <button
           onClick={() => { setEditingHabit(null); setShowModal(true); }}
-          className="flex items-center gap-1.5 text-sm transition-colors duration-150"
+          className="flex items-center gap-1.5 text-sm transition-all duration-200"
           style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-green)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--accent-green)';
+            e.currentTarget.style.textShadow = '0 0 12px rgba(74,222,128,0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-muted)';
+            e.currentTarget.style.textShadow = 'none';
+          }}
         >
           <Plus size={14} />
           New Habit

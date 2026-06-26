@@ -9,7 +9,7 @@ const HEADER_HEIGHT = 58;
 const FOOTER_HEIGHT = 40;
 
 function getCellColor(baseColor, streakCount) {
-  if (streakCount === 0) return 'var(--bg-hover)';
+  if (streakCount === 0) return 'rgba(255,255,255,0.04)';
   const r = parseInt(baseColor.slice(1, 3), 16);
   const g = parseInt(baseColor.slice(3, 5), 16);
   const b = parseInt(baseColor.slice(5, 7), 16);
@@ -43,10 +43,20 @@ export default function HeatmapGrid() {
           {/* Left arrow */}
           <button
             onClick={() => setWeekOffset(weekOffset + 1)}
-            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-150"
-            style={{ color: 'var(--text-muted)', background: 'var(--bg-hover)' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
+            style={{
+              color: 'var(--text-muted)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--glass-border)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-muted)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+            }}
           >
             <ChevronLeft size={14} />
           </button>
@@ -62,7 +72,10 @@ export default function HeatmapGrid() {
                 {todayFlag ? (
                   <div
                     className="w-9 h-9 rounded-full flex flex-col items-center justify-center"
-                    style={{ background: 'var(--accent-green)' }}
+                    style={{
+                      background: 'linear-gradient(135deg, #4ade80, #22c55e)',
+                      boxShadow: '0 0 16px rgba(74,222,128,0.4)',
+                    }}
                   >
                     <span className="text-xs font-bold leading-none text-black">{format(day, 'd')}</span>
                     <span className="text-[9px] leading-none text-black font-medium">{format(day, 'EEE').toUpperCase()}</span>
@@ -81,15 +94,24 @@ export default function HeatmapGrid() {
           <button
             onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
             disabled={weekOffset === 0}
-            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-150"
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
             style={{
               color: 'var(--text-muted)',
-              background: 'var(--bg-hover)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--glass-border)',
               opacity: weekOffset === 0 ? 0.3 : 1,
               cursor: weekOffset === 0 ? 'not-allowed' : 'pointer',
             }}
-            onMouseEnter={(e) => weekOffset !== 0 && (e.currentTarget.style.color = 'var(--text-primary)')}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+            onMouseEnter={(e) => {
+              if (weekOffset !== 0) {
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-muted)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+            }}
           >
             <ChevronRight size={14} />
           </button>
@@ -102,7 +124,7 @@ export default function HeatmapGrid() {
             <div
               key={i}
               className="flex items-center gap-1 flex-shrink-0"
-              style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--border)' }}
+              style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--glass-border)' }}
             >
               <div className="w-7 flex-shrink-0" />
               {days.map((_, j) => (
@@ -118,7 +140,7 @@ export default function HeatmapGrid() {
             <div
               key={habit._id}
               className="flex items-center gap-1 flex-shrink-0"
-              style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--border)' }}
+              style={{ height: `${ROW_HEIGHT}px`, borderBottom: '1px solid var(--glass-border)' }}
             >
               <div className="w-7 flex-shrink-0" />
 
@@ -142,10 +164,10 @@ export default function HeatmapGrid() {
                 const cellColor = done
                   ? getCellColor(habit.color, streakLen)
                   : clickable
-                    ? 'var(--bg-hover)'
+                    ? 'rgba(255,255,255,0.04)'
                     : isPast
-                      ? 'var(--bg-primary)'   // darker for locked past
-                      : 'var(--bg-hover)';    // future
+                      ? 'rgba(255,255,255,0.015)'   // darker for locked past
+                      : 'rgba(255,255,255,0.04)';    // future
 
                 return (
                   <div
@@ -158,19 +180,24 @@ export default function HeatmapGrid() {
                       background: cellColor,
                       cursor: clickable ? 'pointer' : 'not-allowed',
                       border: isToday(day) && weekOffset === 0
-                        ? `1.5px solid ${habit.color}`
-                        : '1px solid transparent',
+                        ? `1.5px solid ${habit.color}80`
+                        : '1px solid rgba(255,255,255,0.04)',
                       opacity: isPast && !done ? 0.45 : 1,
+                      boxShadow: done ? `0 0 8px ${habit.color}20` : 'none',
+                      backdropFilter: 'blur(4px)',
+                      WebkitBackdropFilter: 'blur(4px)',
                     }}
                     onMouseEnter={(e) => {
                       if (clickable) {
                         e.currentTarget.style.transform = 'scale(0.93)';
                         e.currentTarget.style.opacity = '0.8';
+                        e.currentTarget.style.boxShadow = `0 0 12px ${habit.color}30`;
                       }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1)';
                       e.currentTarget.style.opacity = isPast && !done ? '0.45' : '1';
+                      e.currentTarget.style.boxShadow = done ? `0 0 8px ${habit.color}20` : 'none';
                     }}
                     title={
                       clickable

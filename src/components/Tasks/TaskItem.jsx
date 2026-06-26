@@ -75,8 +75,13 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
         isOverdue ? "border-l-4 border-l-red-500" : "border-transparent"
       )}
       style={{ 
-        background: 'var(--bg-secondary)', 
-        borderColor: isDragging ? 'var(--accent-green)' : 'var(--border)',
+        background: isDragging ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', 
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderColor: isDragging ? 'var(--accent-green)' : 'var(--glass-border)',
+        boxShadow: isDragging 
+          ? '0 16px 40px rgba(0,0,0,0.3), 0 0 20px rgba(74,222,128,0.15), inset 0 1px 0 rgba(255,255,255,0.06)' 
+          : 'var(--glass-shadow), var(--glass-inset-shadow)',
         ...provided.draggableProps.style 
       }}
     >
@@ -85,7 +90,7 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
           {/* Drag Handle */}
           <div 
             {...provided.dragHandleProps}
-            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted p-1"
+            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1"
             style={{ color: 'var(--text-muted)' }}
           >
             <GripVertical size={18} />
@@ -122,7 +127,10 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
             
             {/* Timeline Bar */}
             {task.timeline?.startDate && (
-              <div className="mt-2 w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="mt-2 w-full h-1 rounded-full overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.06)' }}
+              >
                 <div 
                   className="h-full transition-all duration-500"
                   style={{ 
@@ -138,14 +146,17 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
             <div className="flex items-center gap-1">
               <button 
                 onClick={() => setShowRemarks(!showRemarks)}
-                className={clsx("p-2 rounded-lg transition-colors", showRemarks ? "bg-hover text-primary" : "text-muted hover:bg-hover")}
+                className="p-2 rounded-lg transition-colors"
                 style={{ color: showRemarks ? 'var(--text-primary)' : 'var(--text-muted)' }}
               >
                 <MessageSquare size={16} />
               </button>
               <button 
                 onClick={() => deleteTask(task._id)}
-                className="p-2 rounded-lg hover:bg-red-500/10 hover:text-red-500 text-muted transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
               >
                 <Trash2 size={16} />
               </button>
@@ -156,11 +167,11 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
         {/* Metadata Badges */}
         <div className={clsx(
           "flex items-center gap-6",
-          isKanban ? "w-full justify-between mt-2 pt-3 border-t border-dashed border-border" : "ml-auto mr-4"
-        )}>
+          isKanban ? "w-full justify-between mt-2 pt-3 border-t border-dashed" : "ml-auto mr-4"
+        )} style={{ borderColor: isKanban ? 'var(--glass-border)' : undefined }}>
           {/* Priority */}
           <div className="flex flex-col items-start min-w-[60px]">
-            <span className="text-[9px] uppercase tracking-tighter text-muted mb-1" style={{ color: 'var(--text-muted)' }}>Priority</span>
+            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Priority</span>
             <select
               value={task.priority}
               onChange={(e) => updateTask(task._id, { priority: e.target.value })}
@@ -179,9 +190,9 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
 
           {/* Budget */}
           <div className="flex flex-col items-start min-w-[70px]">
-            <span className="text-[9px] uppercase tracking-tighter text-muted mb-1" style={{ color: 'var(--text-muted)' }}>Budget</span>
+            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Budget</span>
             <div className="flex items-center gap-1 text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
-              <span className="text-muted font-medium">{task.budget?.currency}</span>
+              <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{task.budget?.currency}</span>
               <input 
                 type="number"
                 value={task.budget?.amount || 0}
@@ -193,15 +204,12 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
 
           {/* Due Date */}
           <div className="flex flex-col items-start min-w-[80px]">
-            <span className="text-[9px] uppercase tracking-tighter text-muted mb-1" style={{ color: 'var(--text-muted)' }}>Due Date</span>
+            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Due Date</span>
             <input 
               type="date"
               value={task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd') : ''}
               onChange={(e) => updateTask(task._id, { dueDate: e.target.value })}
-              className={clsx(
-                "text-[11px] font-bold bg-transparent border-none outline-none cursor-pointer",
-                isOverdue ? "text-red-500" : "text-primary"
-              )}
+              className="text-[11px] font-bold bg-transparent border-none outline-none cursor-pointer"
               style={{ color: isOverdue ? '#ef4444' : 'var(--text-primary)' }}
             />
           </div>
@@ -210,13 +218,19 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
             <div className="flex items-center gap-1 ml-auto">
               <button 
                 onClick={() => setShowRemarks(!showRemarks)}
-                className="text-muted hover:text-primary transition-colors"
+                className="transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
               >
                 <MessageSquare size={14} />
               </button>
               <button 
                 onClick={() => deleteTask(task._id)}
-                className="text-muted hover:text-red-500 transition-colors"
+                className="transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
               >
                 <Trash2 size={14} />
               </button>
@@ -233,7 +247,13 @@ export default function TaskItem({ task, provided, isDragging, isKanban }) {
             onChange={(e) => updateTask(task._id, { remarks: e.target.value })}
             placeholder="Add notes..."
             className="w-full p-3 rounded-lg text-sm outline-none resize-none min-h-[80px]"
-            style={{ background: 'var(--bg-hover)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--glass-border)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
           />
         </div>
       )}

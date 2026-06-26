@@ -37,10 +37,23 @@ export default function AddHabitModal({ onClose, existingHabit }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{
+        background: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
+    >
       <div
         className="w-full max-w-md rounded-3xl p-8 shadow-2xl mx-4"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+        }}
       >
         <h2 className="text-lg font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>
           {existingHabit ? 'Edit Habit' : 'New Habit'}
@@ -57,9 +70,21 @@ export default function AddHabitModal({ onClose, existingHabit }) {
               autoFocus
               required
               className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-              style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-              onFocus={(e) => e.target.style.borderColor = color}
-              onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid var(--glass-border)',
+                color: 'var(--text-primary)',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = color;
+                e.target.style.boxShadow = `0 0 16px ${color}25`;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--glass-border)';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
@@ -75,7 +100,7 @@ export default function AddHabitModal({ onClose, existingHabit }) {
                   style={{
                     background: c,
                     transform: color === c ? 'scale(1.25)' : 'scale(1)',
-                    boxShadow: color === c ? `0 0 0 2px var(--bg-card), 0 0 0 4px ${c}` : 'none',
+                    boxShadow: color === c ? `0 0 0 2px rgba(255,255,255,0.06), 0 0 0 4px ${c}, 0 0 16px ${c}40` : `0 0 8px ${c}30`,
                   }}
                 >
                   {color === c && (
@@ -88,9 +113,17 @@ export default function AddHabitModal({ onClose, existingHabit }) {
             </div>
           </div>
 
-          {/* Preview */}
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
-            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color }} />
+          {/* Preview – glass */}
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-xl"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid var(--glass-border)',
+            }}
+          >
+            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: color, boxShadow: `0 0 8px ${color}50` }} />
             <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
               {name || 'Habit preview'}
             </span>
@@ -101,7 +134,13 @@ export default function AddHabitModal({ onClose, existingHabit }) {
               type="button"
               onClick={onClose}
               className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
-              style={{ background: 'var(--bg-primary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--glass-border)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+              }}
             >
               Cancel
             </button>
@@ -109,7 +148,12 @@ export default function AddHabitModal({ onClose, existingHabit }) {
               type="submit"
               disabled={loading || !name.trim()}
               className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
-              style={{ background: color, color: '#fff', opacity: loading || !name.trim() ? 0.6 : 1 }}
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+                color: '#fff',
+                opacity: loading || !name.trim() ? 0.6 : 1,
+                boxShadow: loading || !name.trim() ? 'none' : `0 4px 20px ${color}40`,
+              }}
             >
               {loading ? 'Saving…' : existingHabit ? 'Update' : 'Add Habit'}
             </button>

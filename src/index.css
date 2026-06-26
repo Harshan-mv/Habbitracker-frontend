@@ -1,36 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+/* ─── Glassmorphism Dark Theme ─── */
 :root {
-  --bg-primary: #111111;
-  --bg-secondary: #1a1a1a;
-  --bg-card: #222222;
-  --bg-hover: #2a2a2a;
-  --border: #333333;
-  --text-primary: #f5f5f5;
-  --text-secondary: #999999;
-  --text-muted: #555555;
+  --bg-primary: transparent;
+  --bg-secondary: rgba(255, 255, 255, 0.05);
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(255, 255, 255, 0.15);
+  --text-primary: #f0f0f5;
+  --text-secondary: #a0a0b8;
+  --text-muted: #5a5a72;
   --accent-green: #4ade80;
   --accent-green-dark: #22c55e;
-  --status-gray: #333333;
+  --status-gray: rgba(255, 255, 255, 0.12);
   --status-amber: #f59e0b;
   --status-red: #ef4444;
+
+  /* Glass tokens */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-strong: rgba(255, 255, 255, 0.07);
+  --glass-blur: 16px;
+  --glass-blur-strong: 24px;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+/* ─── Glassmorphism Light Theme ─── */
 .light {
-  --bg-primary: #f8f9fa;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-hover: #f0f0f0;
-  --border: #e0e0e0;
-  --text-primary: #111111;
-  --text-secondary: #555555;
-  --text-muted: #999999;
+  --bg-primary: transparent;
+  --bg-secondary: rgba(255, 255, 255, 0.45);
+  --bg-card: rgba(255, 255, 255, 0.5);
+  --bg-hover: rgba(255, 255, 255, 0.55);
+  --border: rgba(255, 255, 255, 0.5);
+  --border-glow: rgba(255, 255, 255, 0.7);
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a68;
+  --text-muted: #8888a4;
   --accent-green: #16a34a;
   --accent-green-dark: #15803d;
-  --status-gray: #e5e7eb;
+  --status-gray: rgba(0, 0, 0, 0.06);
   --status-amber: #d97706;
   --status-red: #dc2626;
+
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-bg-strong: rgba(255, 255, 255, 0.5);
+  --glass-blur: 20px;
+  --glass-blur-strong: 30px;
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --glass-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 * {
@@ -39,48 +62,177 @@
   padding: 0;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
-  min-height: 100vh;
-}
-
 html {
   scroll-behavior: smooth;
 }
 
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  transition: color 0.3s;
+  min-height: 100vh;
+
+  /* Animated gradient background */
+  background: linear-gradient(
+    135deg,
+    #0a0a1a 0%,
+    #0d1b2a 15%,
+    #1b2838 30%,
+    #0f2027 45%,
+    #1a0a2e 60%,
+    #16213e 75%,
+    #0a192f 90%,
+    #0a0a1a 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+.light body,
+body:has(.light) {
+  background: linear-gradient(
+    135deg,
+    #e0c3fc 0%,
+    #c3e0fc 15%,
+    #c3fce0 30%,
+    #fce0c3 45%,
+    #e0c3fc 60%,
+    #c3e0fc 75%,
+    #c3fce0 90%,
+    #e0c3fc 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+html.light {
+  background: linear-gradient(
+    135deg,
+    #e0c3fc 0%,
+    #c3e0fc 15%,
+    #c3fce0 30%,
+    #fce0c3 45%,
+    #e0c3fc 60%,
+    #c3e0fc 75%,
+    #c3fce0 90%,
+    #e0c3fc 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: rgba(255, 255, 255, 0.2);
+}
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
+/* ─── Skeleton Loading ─── */
 @keyframes skeleton-shimmer {
-  0% {
-    background-color: var(--bg-hover);
-  }
-  50% {
-    background-color: var(--border);
-  }
-  100% {
-    background-color: var(--bg-hover);
-  }
+  0% { background-color: rgba(255, 255, 255, 0.04); }
+  50% { background-color: rgba(255, 255, 255, 0.08); }
+  100% { background-color: rgba(255, 255, 255, 0.04); }
 }
-
 .skeleton {
   animation: skeleton-shimmer 1.5s infinite ease-in-out;
   border-radius: 4px;
+}
+
+/* ─── Glass Card utility ─── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--glass-shadow-lg), var(--glass-inset-shadow);
+}
+
+.glass-card-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
+}
+
+/* ─── Floating orb decorations ─── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  top: -10%;
+  left: -5%;
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.3), transparent 70%);
+  animation: orbFloat1 12s ease-in-out infinite;
+}
+.orb-2 {
+  width: 400px;
+  height: 400px;
+  top: 50%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.25), transparent 70%);
+  animation: orbFloat2 15s ease-in-out infinite;
+}
+.orb-3 {
+  width: 350px;
+  height: 350px;
+  bottom: -8%;
+  left: 30%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%);
+  animation: orbFloat3 18s ease-in-out infinite;
+}
+.light .orb { opacity: 0.5; }
+
+@keyframes orbFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, 40px) scale(1.1); }
+  66% { transform: translate(-30px, 80px) scale(0.95); }
+}
+@keyframes orbFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-50px, -60px) scale(1.05); }
+  66% { transform: translate(40px, -30px) scale(0.9); }
+}
+@keyframes orbFloat3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(70px, -40px) scale(1.08); }
+  66% { transform: translate(-60px, 20px) scale(0.92); }
 }
 
 /* ─── Finance Module Tokens ─── */
@@ -95,27 +247,36 @@ html {
   --accent-purple: #7c3aed;
 }
 
-/* ─── Finance Inputs ─── */
+/* ─── Finance Inputs (Glass) ─── */
 .finance-input {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 13px;
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   outline: none;
-  transition: border-color 0.2s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .finance-input:focus {
   border-color: var(--accent-green);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.15);
 }
 .finance-input::placeholder {
   color: var(--text-muted);
 }
 .finance-input option {
-  background: var(--bg-card);
+  background: #1a1a2e;
   color: var(--text-primary);
+}
+.light .finance-input {
+  background: rgba(255, 255, 255, 0.4);
+}
+.light .finance-input option {
+  background: #ffffff;
 }
 
 /* ─── Finance Icon Buttons ─── */
@@ -132,31 +293,37 @@ html {
   flex-shrink: 0;
   background: transparent;
 }
-.finance-icon-btn.green {
-  color: var(--accent-green);
-}
-.finance-icon-btn.green:hover {
-  background: rgba(74, 222, 128, 0.15);
-}
-.finance-icon-btn.red {
-  color: var(--accent-red);
-}
-.finance-icon-btn.red:hover {
-  background: rgba(248, 113, 113, 0.15);
-}
-.finance-icon-btn.muted {
-  color: var(--text-muted);
-}
+.finance-icon-btn.green { color: var(--accent-green); }
+.finance-icon-btn.green:hover { background: rgba(74, 222, 128, 0.15); }
+.finance-icon-btn.red { color: var(--accent-red); }
+.finance-icon-btn.red:hover { background: rgba(248, 113, 113, 0.15); }
+.finance-icon-btn.muted { color: var(--text-muted); }
 .finance-icon-btn.muted:hover {
   color: var(--text-secondary);
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-/* ─── Finance Card Hover ─── */
+/* ─── Finance Card (Glass) ─── */
 .finance-card {
-  transition: box-shadow 0.3s, border-color 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .finance-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  border-color: var(--border-glow) !important;
+  box-shadow: var(--glass-shadow-lg), var(--glass-inset-shadow);
+}
+
+/* ─── Glow accent on focused elements ─── */
+.glow-green { box-shadow: 0 0 20px rgba(74, 222, 128, 0.2); }
+.glow-blue { box-shadow: 0 0 20px rgba(96, 165, 250, 0.2); }
+.glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+
+/* ─── Selection color ─── */
+::selection {
+  background: rgba(74, 222, 128, 0.3);
+  color: #fff;
 }

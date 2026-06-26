@@ -30,12 +30,12 @@ export default function TaskKanban({ tasks }) {
         {COLUMNS.map((col) => (
           <div key={col.id} className="flex-shrink-0 w-80 flex flex-col">
             <div className="flex items-center gap-2 mb-4 px-2">
-              <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
+              <div className="w-2 h-2 rounded-full" style={{ background: col.color, boxShadow: `0 0 8px ${col.color}` }} />
               <h3 className="font-semibold text-sm uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                 {col.label}
               </h3>
               {!isLoadingTasks && (
-                <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-hover" style={{ color: 'var(--text-muted)' }}>
+                <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: 'var(--text-primary)', background: 'rgba(255,255,255,0.1)' }}>
                   {tasks.filter(t => t.status === col.id).length}
                 </span>
               )}
@@ -47,7 +47,7 @@ export default function TaskKanban({ tasks }) {
                   <div 
                     key={i} 
                     className="mb-3 p-4 rounded-2xl"
-                    style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)' }}
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)' }}
                   >
                     <Skeleton width="40%" height="12px" className="mb-3" />
                     <Skeleton width="100%" height="16px" className="mb-4" />
@@ -66,9 +66,12 @@ export default function TaskKanban({ tasks }) {
                     ref={provided.innerRef}
                     className={clsx(
                       "flex-1 rounded-xl p-2 transition-colors border-2 border-dashed",
-                      snapshot.isDraggingOver ? "bg-hover border-accent-green/30" : "border-transparent"
+                      snapshot.isDraggingOver ? "border-accent-green/30" : "border-transparent"
                     )}
-                    style={{ background: snapshot.isDraggingOver ? 'var(--bg-hover)' : 'transparent' }}
+                    style={{ 
+                      background: snapshot.isDraggingOver ? 'rgba(255,255,255,0.08)' : 'transparent',
+                      backdropFilter: snapshot.isDraggingOver ? 'blur(12px)' : 'none',
+                    }}
                   >
                     {tasks
                       .filter((t) => t.status === col.id)

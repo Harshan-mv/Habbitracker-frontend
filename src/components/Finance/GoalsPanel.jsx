@@ -5,12 +5,13 @@ import { Target, Shield, CreditCard, Pencil, ArrowRightLeft, RotateCcw } from 'l
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)' }}>
       <div
         className="h-full rounded-full"
         style={{
           width: `${pct}%`,
           background: color,
+          boxShadow: `0 0 12px ${color}80`,
           transition: 'width 0.6s cubic-bezier(.4,0,.2,1)',
         }}
       />
@@ -70,7 +71,7 @@ export default function GoalsPanel() {
       label: 'EMI Tracker',
       icon: CreditCard,
       color: '#f59e0b',
-      bg: 'rgba(245,158,11,0.1)',
+      bg: 'rgba(245,158,11,0.15)',
       value: monthData.emiTotalMonths - monthData.emiMonthsLeft,
       max: monthData.emiTotalMonths,
       subtitle: `${monthData.emiMonthsLeft} months remaining`,
@@ -86,10 +87,10 @@ export default function GoalsPanel() {
       description: 'Monthly allocation → accumulates across months',
       icon: Target,
       color: 'var(--accent-green)',
-      bg: 'rgba(74,222,128,0.1)',
+      bg: 'rgba(74,222,128,0.15)',
       value: monthData.savingsAchieved,
       max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
-      subtitle: `Target: ₹${(monthData.savingsTarget || 0).toLocaleString('en-IN')} · Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')}`,
+      subtitle: `Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevSavingsAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.savingsGoal || 0).toLocaleString('en-IN')})`,
       align: 'left',
       editFields: [
         { label: 'This Month', field: 'savingsGoal', val: monthData.savingsGoal || 0 },
@@ -104,10 +105,10 @@ export default function GoalsPanel() {
       description: 'Monthly allocation → carries forward',
       icon: Shield,
       color: 'var(--accent-purple)',
-      bg: 'rgba(167,139,250,0.1)',
+      bg: 'rgba(167,139,250,0.15)',
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
-      subtitle: `Target: ₹${(monthData.emergencyTarget || 0).toLocaleString('en-IN')} · Total: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')}`,
+      subtitle: `Total saved: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevEmergencyAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.emergencyFund || 0).toLocaleString('en-IN')})`,
       align: 'center',
       editFields: [
         { label: 'This Month', field: 'emergencyFund', val: monthData.emergencyFund || 0 },
@@ -125,7 +126,7 @@ export default function GoalsPanel() {
           <Target size={14} /> Goal Tracking
         </h3>
         {(monthData.carryForward || 0) > 0 && (
-          <span className="text-[10px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)' }}>
+          <span className="text-[10px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)', border: '1px solid rgba(74,222,128,0.2)' }}>
             <ArrowRightLeft size={10} /> ₹{monthData.carryForward.toLocaleString('en-IN')} Carry
           </span>
         )}
@@ -140,23 +141,18 @@ export default function GoalsPanel() {
             <div 
               key={g.key} 
               className="finance-card rounded-2xl p-5 group relative overflow-hidden"
-              style={{ 
-                background: 'var(--bg-card)', 
-                border: '1px solid var(--border)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}
             >
               {/* Status Indicator */}
               <div 
                 className="absolute top-0 left-0 w-1 h-full" 
-                style={{ background: g.color }}
+                style={{ background: g.color, boxShadow: `0 0 16px ${g.color}` }}
               />
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                    style={{ background: g.bg }}
+                    style={{ background: g.bg, boxShadow: `0 0 16px ${g.bg}` }}
                   >
                     <Icon size={20} style={{ color: g.color }} />
                   </div>
@@ -173,7 +169,7 @@ export default function GoalsPanel() {
                 </div>
                 <div className="flex items-center gap-3">
                   {pct !== null && (
-                    <span className="text-lg font-black tracking-tighter" style={{ color: g.color }}>
+                    <span className="text-lg font-black tracking-tighter" style={{ color: g.color, textShadow: `0 0 12px ${g.color}40` }}>
                       {pct}%
                     </span>
                   )}
@@ -231,14 +227,14 @@ export default function GoalsPanel() {
                       <button
                         onClick={() => addToGoal(g.key, 1000)}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33`, boxShadow: `0 0 12px ${g.bg}` }}
                       >
                         +1k
                       </button>
                       <button
                         onClick={() => addToGoal(g.key, 5000)}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33` }}
+                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33`, boxShadow: `0 0 12px ${g.bg}` }}
                       >
                         +5k
                       </button>

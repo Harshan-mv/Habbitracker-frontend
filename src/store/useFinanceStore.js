@@ -24,6 +24,7 @@ const defaultMonthData = () => ({
   carryForward: 0,
   prevSavingsAchieved: 0,
   prevEmergencyAchieved: 0,
+  note: '',
 });
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -143,6 +144,11 @@ const useFinanceStore = create((set, get) => {
     // ── Trading ───────────────────────────────────────────
     updateTrading: (field, value) => {
       get()._update((d) => ({ ...d, [field]: Number(value) }));
+    },
+
+    // ── Notes ─────────────────────────────────────────────
+    updateNote: (note) => {
+      get()._update((d) => ({ ...d, note }));
     },
 
     // ── Goals ─────────────────────────────────────────────

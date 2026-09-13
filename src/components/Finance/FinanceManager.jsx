@@ -7,6 +7,7 @@ import ExpenseSection from './ExpenseSection';
 import ChartsPanel from './ChartsPanel';
 import GoalsPanel from './GoalsPanel';
 import TradingPanel from './TradingPanel';
+import FinanceNoteSection from './FinanceNoteSection';
 import Skeleton from '../Skeleton';
 
 const MONTH_NAMES = [
@@ -112,10 +113,11 @@ export default function FinanceManager() {
           </div>
         ) : (
           <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            {/* Left Column: Income + Expenses */}
+            {/* Left Column: Income + Expenses + Notes */}
             <div className="space-y-4">
               <IncomeSection />
               <ExpenseSection />
+              <FinanceNoteSection />
             </div>
 
             {/* Right Column: Charts + Goals + Trading */}

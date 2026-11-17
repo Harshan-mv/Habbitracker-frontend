@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Check, Lock } from 'lucide-react';
-import { format, isToday, subDays, parseISO } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import useStore from '../store/useStore';
 import { getLast12Days, formatDate, isLoggedOnDate } from '../utils/streakLogic';
 import Skeleton from './Skeleton';
@@ -43,20 +43,9 @@ export default function HeatmapGrid() {
           {/* Left arrow */}
           <button
             onClick={() => setWeekOffset(weekOffset + 1)}
-            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
-            style={{
-              color: 'var(--text-muted)',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid var(--glass-border)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text-primary)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-muted)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-            }}
+            type="button"
+            aria-label="Show earlier dates"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
           >
             <ChevronLeft size={14} />
           </button>
@@ -66,24 +55,24 @@ export default function HeatmapGrid() {
             const dateStr = formatDate(day);
             return (
               <div key={dateStr} className="flex-1 flex flex-col items-center" style={{ minWidth: '44px' }}>
-                <span className="text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>
-                  {format(day, 'MMM')}
+                <span className="mb-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {format(day, 'MMM d')}
                 </span>
                 {todayFlag ? (
                   <div
-                    className="w-9 h-9 rounded-full flex flex-col items-center justify-center"
+                    className="flex h-9 w-9 flex-col items-center justify-center rounded-[var(--radius-control)]"
                     style={{
-                      background: 'linear-gradient(135deg, #4ade80, #22c55e)',
-                      boxShadow: '0 0 16px rgba(74,222,128,0.4)',
+                      background: 'var(--accent)',
+                      color: 'var(--accent-ink)',
                     }}
                   >
-                    <span className="text-xs font-bold leading-none text-black">{format(day, 'd')}</span>
-                    <span className="text-[9px] leading-none text-black font-medium">{format(day, 'EEE').toUpperCase()}</span>
+                    <span className="text-xs font-semibold leading-none">{format(day, 'd')}</span>
+                    <span className="text-[11px] leading-none font-medium">{format(day, 'EEE')}</span>
                   </div>
                 ) : (
-                  <div className="w-9 h-9 flex flex-col items-center justify-center">
+                  <div className="flex h-9 w-9 flex-col items-center justify-center">
                     <span className="text-sm font-semibold leading-none" style={{ color: 'var(--text-primary)' }}>{format(day, 'd')}</span>
-                    <span className="text-[9px] leading-none font-medium" style={{ color: 'var(--text-muted)' }}>{format(day, 'EEE').toUpperCase()}</span>
+                    <span className="text-[11px] leading-none font-medium" style={{ color: 'var(--text-muted)' }}>{format(day, 'EEE')}</span>
                   </div>
                 )}
               </div>
@@ -93,25 +82,10 @@ export default function HeatmapGrid() {
           {/* Right arrow */}
           <button
             onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
+            type="button"
             disabled={weekOffset === 0}
-            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200"
-            style={{
-              color: 'var(--text-muted)',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid var(--glass-border)',
-              opacity: weekOffset === 0 ? 0.3 : 1,
-              cursor: weekOffset === 0 ? 'not-allowed' : 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              if (weekOffset !== 0) {
-                e.currentTarget.style.color = 'var(--text-primary)';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-muted)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-            }}
+            aria-label="Show later dates"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronRight size={14} />
           </button>
@@ -164,42 +138,31 @@ export default function HeatmapGrid() {
                 const cellColor = done
                   ? getCellColor(habit.color, streakLen)
                   : clickable
-                    ? 'rgba(255,255,255,0.04)'
+                    ? 'var(--surface-raised)'
                     : isPast
-                      ? 'rgba(255,255,255,0.015)'   // darker for locked past
-                      : 'rgba(255,255,255,0.04)';    // future
+                        ? 'var(--page)'
+                        : 'var(--surface-raised)';
 
                 return (
-                  <div
-                    key={dateStr}
-                    onClick={() => handleCellClick(habit._id, dateStr, clickable)}
-                    className="flex-1 rounded-lg transition-all duration-200 flex items-center justify-center relative group"
-                    style={{
-                      height: '38px',
-                      minWidth: '44px',
-                      background: cellColor,
-                      cursor: clickable ? 'pointer' : 'not-allowed',
-                      border: isToday(day) && weekOffset === 0
-                        ? `1.5px solid ${habit.color}80`
-                        : '1px solid rgba(255,255,255,0.04)',
-                      opacity: isPast && !done ? 0.45 : 1,
-                      boxShadow: done ? `0 0 8px ${habit.color}20` : 'none',
-                      backdropFilter: 'blur(4px)',
-                      WebkitBackdropFilter: 'blur(4px)',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (clickable) {
-                        e.currentTarget.style.transform = 'scale(0.93)';
-                        e.currentTarget.style.opacity = '0.8';
-                        e.currentTarget.style.boxShadow = `0 0 12px ${habit.color}30`;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.opacity = isPast && !done ? '0.45' : '1';
-                      e.currentTarget.style.boxShadow = done ? `0 0 8px ${habit.color}20` : 'none';
-                    }}
-                    title={
+                    <button
+                      key={dateStr}
+                      type="button"
+                      onClick={() => handleCellClick(habit._id, dateStr, clickable)}
+                      disabled={!clickable}
+                      aria-label={`${habit.name}, ${format(day, 'EEEE, MMMM d')}: ${done ? 'complete' : 'incomplete'}${clickable ? ', toggle completion' : ', locked'}`}
+                      aria-pressed={done}
+                      className="relative flex-1 rounded-[var(--radius-control)] transition-colors flex items-center justify-center disabled:cursor-not-allowed"
+                      style={{
+                        height: '38px',
+                        minWidth: '44px',
+                        background: cellColor,
+                        border: isToday(day) && weekOffset === 0
+                          ? '1px solid var(--accent)'
+                          : '1px solid var(--line)',
+                        opacity: isPast && !done ? 0.45 : 1,
+                        color: 'var(--on-heatmap)',
+                      }}
+                      title={
                       clickable
                         ? `${habit.name} — Click to ${done ? 'unmark' : 'mark'} today`
                         : isPast
@@ -208,11 +171,11 @@ export default function HeatmapGrid() {
                     }
                   >
                     {done ? (
-                      <Check size={12} color="rgba(255,255,255,0.85)" strokeWidth={3} />
+                      <Check size={14} color="currentColor" strokeWidth={2} aria-hidden="true" />
                     ) : isPast ? (
-                      <Lock size={9} color="var(--text-muted)" strokeWidth={2} className="opacity-50" />
+                      <Lock size={12} color="var(--text-muted)" strokeWidth={1.7} aria-hidden="true" />
                     ) : null}
-                  </div>
+                  </button>
                 );
               })}
 

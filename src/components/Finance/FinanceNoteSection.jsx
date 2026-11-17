@@ -1,43 +1,28 @@
-import React from 'react';
-import { FileText } from 'lucide-react';
 import useFinanceStore from '../../store/useFinanceStore';
 
 export default function FinanceNoteSection() {
-  const { monthData, updateNote } = useFinanceStore();
+  const { monthData, updateNote, isSaving, financeError } = useFinanceStore();
 
   return (
-    <div
-      className="p-4 rounded-xl flex flex-col h-full"
-      style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid var(--glass-border)',
-      }}
-    >
-      <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-primary)]">
-        <FileText size={16} style={{ color: 'var(--accent-blue)' }} />
-        Financial Note of the Month
+    <section className="app-surface p-4 sm:p-5" aria-labelledby="finance-note-heading">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 id="finance-note-heading" className="text-sm font-medium text-[var(--text-primary)]">Monthly note</h3>
+        <span className="text-xs text-[var(--text-muted)]" aria-live="polite">
+          {isSaving ? 'Saving' : financeError ? 'Not saved' : 'Auto-saves'}
+        </span>
       </div>
+      <label htmlFor="finance-note" className="sr-only">Notes for this month’s finances</label>
       <textarea
-        className="w-full flex-1 p-3 rounded-lg text-sm transition-all resize-none"
-        style={{
-          background: 'rgba(0,0,0,0.15)',
-          border: '1px solid var(--glass-border)',
-          color: 'var(--text-primary)',
-          outline: 'none',
-          minHeight: '120px'
-        }}
-        placeholder="Add a small financial note here..."
+        id="finance-note"
+        className="min-h-32 w-full resize-y rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] p-3 text-sm text-[var(--text-primary)]"
+        placeholder="Add a note about this month’s plan"
         value={monthData.note || ''}
-        onChange={(e) => updateNote(e.target.value)}
-        onFocus={(e) => {
-          e.target.style.border = '1px solid var(--accent-blue)';
-          e.target.style.boxShadow = '0 0 0 2px rgba(var(--accent-blue-rgb), 0.2)';
-        }}
-        onBlur={(e) => {
-          e.target.style.border = '1px solid var(--glass-border)';
-          e.target.style.boxShadow = 'none';
-        }}
+        maxLength={2000}
+        onChange={(event) => updateNote(event.target.value)}
       />
-    </div>
+      {financeError?.includes('monthly notes') && (
+        <p className="mt-2 text-xs text-[var(--negative)]" role="status">{financeError}</p>
+      )}
+    </section>
   );
 }

@@ -1,46 +1,56 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Check, Eye, EyeOff, Goal, WalletCards } from 'lucide-react';
 import useStore from '../store/useStore';
+import useToastStore from '../store/useToastStore';
+import api from '../utils/axiosConfig';
 
 const FEATURES = [
-  { icon: '🔥', title: 'Build Streaks', desc: 'Track consecutive days and watch your streaks grow' },
-  { icon: '📊', title: 'Visual Progress', desc: 'Beautiful heatmap grid to see your journey at a glance' },
-  { icon: '🎯', title: 'Daily Focus', desc: 'Stay focused on what matters most each day' },
-  { icon: '🏆', title: 'Hit Records', desc: 'Beat your longest streak and celebrate every win' },
+  { icon: Check, text: 'Mark today and see your consistency over time' },
+  { icon: Goal, text: 'Keep tasks and priorities in one place' },
+  { icon: WalletCards, text: 'Plan income, expenses, and savings by month' },
 ];
 
-const HABIT_EXAMPLES = ['Morning Run 🏃', 'Read 30 min 📚', 'Meditate 🧘', 'Drink Water 💧', 'Journaling ✍️', 'No Sugar 🚫'];
+let hasPingedServer = false;
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
-  const [habitsIdx, setHabitsIdx] = useState(0);
   const { login, register } = useStore();
 
-  // Cycle through example habits
   useEffect(() => {
-    const timer = setInterval(() => {
-      setHabitsIdx((i) => (i + 1) % HABIT_EXAMPLES.length);
-    }, 2000);
-    return () => clearInterval(timer);
+    if (hasPingedServer) return undefined;
+    hasPingedServer = true;
+    api.get('/health').catch((error) => {
+      if (!error.response || [502, 503, 504].includes(error.response.status)) {
+        useToastStore.getState().addToast(
+          'Server is still unavailable. Please retry in a moment.',
+          'error',
+        );
+      }
+    });
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
+
     try {
       if (isLogin) {
-        await login(email, password);
+        await login(email.trim(), password);
       } else {
-        await register(name, email, password);
+        await register(name.trim(), email.trim(), password);
       }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message
+          || 'We could not sign you in. Check your details and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -52,355 +62,194 @@ export default function AuthPage() {
     setName('');
     setEmail('');
     setPassword('');
+    setShowPassword(false);
   };
 
   return (
-    <div className="min-h-screen flex" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <main className="min-h-screen grid lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="hidden lg:flex flex-col justify-between p-10 xl:p-14 border-e border-[var(--line)]">
+        <a href="/" className="inline-flex w-fit items-center gap-3 no-underline text-[var(--text-primary)]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--accent)] text-[var(--accent-ink)]">
+            <Check size={19} strokeWidth={2} aria-hidden="true" />
+          </span>
+          <span className="text-base font-semibold">Habit Tracker</span>
+        </a>
 
-      {/* ══════════════════ LEFT PANEL ══════════════════ */}
-      <div
-        className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden"
-        style={{ width: '52%' }}
-      >
-        {/* Animated gradient orbs */}
-        <div
-          className="absolute top-[-80px] left-[-80px] w-72 h-72 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(74,222,128,0.25) 0%, transparent 70%)', animation: 'pulse 4s ease-in-out infinite' }}
-        />
-        <div
-          className="absolute bottom-[-60px] right-[-60px] w-64 h-64 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)', animation: 'pulse 5s ease-in-out infinite 1s' }}
-        />
-        <div
-          className="absolute top-[40%] right-[-40px] w-48 h-48 rounded-full blur-2xl"
-          style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)', animation: 'pulse 6s ease-in-out infinite 2s' }}
-        />
-
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-black font-bold text-lg shadow-lg"
-            style={{
-              background: 'linear-gradient(135deg, #4ade80, #22c55e)',
-              boxShadow: '0 0 24px rgba(74,222,128,0.4)',
-            }}
-          >
-            ✓
-          </div>
-          <div>
-            <div className="font-bold text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>Habit Tracker</div>
-            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Build better habits daily</div>
-          </div>
-        </div>
-
-        {/* Center content */}
-        <div className="relative z-10">
-          <h1 className="text-5xl font-bold leading-tight mb-4" style={{ color: 'var(--text-primary)' }}>
-            Small habits.<br />
-            <span style={{ background: 'linear-gradient(90deg, #4ade80, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Big results.
-            </span>
+        <div className="max-w-xl py-12">
+          <p className="mb-3 text-sm text-[var(--text-muted)]">Routines, tasks, and finances</p>
+          <h1 className="max-w-lg text-4xl xl:text-5xl font-medium leading-[1.12] tracking-[-0.02em] text-[var(--text-primary)]">
+            Keep the small things moving
           </h1>
-          <p className="text-lg mb-10" style={{ color: 'var(--text-secondary)' }}>
-            Track your daily habits with a beautiful heatmap. Build streaks, stay consistent, become unstoppable.
+          <p className="mt-5 max-w-lg text-base leading-7 text-[var(--text-secondary)]">
+            Build a steady record of your habits, make progress on your tasks, and keep an eye on the month ahead.
           </p>
 
-          {/* Animated habit chip – glass */}
-          <div className="mb-10">
-            <div
-              className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl"
-              style={{
-                background: 'rgba(74,222,128,0.15)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(74,222,128,0.3)',
-                boxShadow: '0 4px 24px rgba(74,222,128,0.1), var(--glass-inset-shadow)',
-                transition: 'all 0.4s ease',
-              }}
-            >
-              <div className="w-2 h-2 rounded-full" style={{ background: '#4ade80', boxShadow: '0 0 12px #4ade80' }} />
-              <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{HABIT_EXAMPLES[habitsIdx]}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(74,222,128,0.2)', color: 'var(--accent-green-dark)' }}>Today ✓</span>
+          <div className="mt-9 app-surface max-w-lg p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-[var(--text-primary)]">A week at a glance</span>
+              <span className="text-xs text-[var(--text-muted)]">Habit progress</span>
+            </div>
+            <div className="mt-4 grid grid-cols-7 gap-2" aria-label="Sample weekly habit progress">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+                <div key={`${day}-${index}`} className="flex flex-col items-center gap-2">
+                  <span className="text-[11px] text-[var(--text-muted)]">{day}</span>
+                  <span
+                    className={`h-8 w-8 rounded-[8px] border ${index < 4 ? 'bg-[var(--accent)]/25 border-[var(--accent)]/50' : 'bg-[var(--surface-raised)] border-[var(--line)]'}`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Feature list – glass cards */}
-          <div className="grid grid-cols-2 gap-4">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="p-4 rounded-2xl transition-all duration-300"
-                style={{
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(var(--glass-blur))',
-                  WebkitBackdropFilter: 'blur(var(--glass-blur))',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: 'var(--glass-inset-shadow)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--glass-bg-strong)';
-                  e.currentTarget.style.borderColor = 'var(--border-glow)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--glass-bg)';
-                  e.currentTarget.style.borderColor = 'var(--glass-border)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div className="text-2xl mb-2">{f.icon}</div>
-                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{f.title}</div>
-                <div className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{f.desc}</div>
-              </div>
+          <ul className="mt-8 space-y-4">
+            {FEATURES.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                <Icon size={17} strokeWidth={1.6} className="mt-0.5 shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+                <span>{text}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
-        {/* Bottom stats */}
-        <div className="relative z-10 flex gap-8">
-          {[['∞', 'Streaks possible'], ['24/7', 'Always in sync'], ['100%', 'Ad-free forever']].map(([val, lbl]) => (
-            <div key={lbl}>
-              <div className="text-xl font-bold" style={{ color: 'var(--accent-green)', textShadow: '0 0 16px rgba(74,222,128,0.3)' }}>{val}</div>
-              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{lbl}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+        <p className="text-xs text-[var(--text-muted)]">A little structure for everyday plans</p>
+      </section>
 
-      {/* ══════════════════ RIGHT PANEL – Glass Form ══════════════════ */}
-      <div
-        className="flex-1 flex flex-col items-center justify-center p-8 relative"
-      >
-        {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-2 mb-10">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-black font-bold"
-            style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', boxShadow: '0 0 20px rgba(74,222,128,0.4)' }}
-          >✓</div>
-          <span className="font-bold text-xl" style={{ color: 'var(--text-primary)' }}>Habit Tracker</span>
-        </div>
+      <section className="flex min-h-screen flex-col items-center justify-center px-4 py-8 sm:px-8 lg:px-12">
+        <a href="/" className="mb-8 inline-flex items-center gap-2.5 text-[var(--text-primary)] no-underline lg:hidden">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[var(--accent)] text-[var(--accent-ink)]">
+            <Check size={17} strokeWidth={2} aria-hidden="true" />
+          </span>
+          <span className="font-semibold">Habit Tracker</span>
+        </a>
 
-        <div
-          className="w-full p-8 rounded-3xl"
-          style={{
-            maxWidth: '420px',
-            background: 'var(--glass-bg-strong)',
-            backdropFilter: 'blur(var(--glass-blur-strong))',
-            WebkitBackdropFilter: 'blur(var(--glass-blur-strong))',
-            border: '1px solid var(--glass-border)',
-            boxShadow: 'var(--glass-shadow-lg), var(--glass-inset-shadow)',
-          }}
-        >
-          {/* Heading */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-              {isLogin ? 'Welcome back 👋' : 'Start your journey 🚀'}
+        <div className="w-full max-w-[420px] rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-raised)] sm:p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-medium leading-tight text-[var(--text-primary)]">
+              {isLogin ? 'Sign in' : 'Create your account'}
             </h2>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {isLogin
-                ? 'Sign in to continue tracking your habits'
-                : 'Create your free account in seconds'}
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              {isLogin ? 'Continue with your routines and plans' : 'Start tracking your routines and plans'}
             </p>
           </div>
 
-          {/* Mode toggle – glass */}
-          <div
-            className="flex rounded-xl p-1 mb-8"
-            style={{
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--glass-border)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          >
-            {['login', 'register'].map((mode) => {
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-[10px] border border-[var(--line)] bg-[var(--page)] p-1">
+            {[
+              { mode: 'login', label: 'Sign in' },
+              { mode: 'register', label: 'Create account' },
+            ].map(({ mode, label }) => {
               const active = (mode === 'login') === isLogin;
               return (
                 <button
                   key={mode}
+                  type="button"
+                  aria-pressed={active}
                   onClick={() => switchMode(mode)}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-250"
-                  style={active
-                    ? {
-                        background: 'linear-gradient(135deg, #4ade80, #22c55e)',
-                        color: '#000',
-                        boxShadow: '0 4px 20px rgba(74,222,128,0.35), 0 0 30px rgba(74,222,128,0.15)',
-                      }
-                    : { color: 'var(--text-secondary)' }
-                  }
+                  className={`min-h-10 rounded-[7px] px-3 text-sm transition-colors ${active ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'}`}
                 >
-                  {mode === 'login' ? 'Sign In' : 'Register'}
+                  {label}
                 </button>
               );
             })}
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Full Name
-                </label>
-                <div
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                  style={{
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
-                    border: `1.5px solid ${focusedField === 'name' ? 'var(--accent-green)' : 'var(--glass-border)'}`,
-                    boxShadow: focusedField === 'name' ? '0 0 20px rgba(74,222,128,0.15), var(--glass-inset-shadow)' : 'var(--glass-inset-shadow)',
-                  }}
-                >
-                  <span style={{ color: 'var(--text-muted)' }}>👤</span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setFocusedField('name')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="Your full name"
-                    required
-                    className="flex-1 bg-transparent text-sm outline-none"
-                    style={{ color: 'var(--text-primary)' }}
-                  />
-                </div>
+                <label htmlFor="auth-name" className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Name</label>
+                <input
+                  id="auth-name"
+                  autoComplete="name"
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                  maxLength={80}
+                  className="min-h-11 w-full rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
+                  placeholder="Your name"
+                  aria-invalid={Boolean(error)}
+                />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                Email Address
-              </label>
-              <div
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                style={{
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: `1.5px solid ${focusedField === 'email' ? 'var(--accent-green)' : 'var(--glass-border)'}`,
-                  boxShadow: focusedField === 'email' ? '0 0 20px rgba(74,222,128,0.15), var(--glass-inset-shadow)' : 'var(--glass-inset-shadow)',
-                }}
-              >
-                <span style={{ color: 'var(--text-muted)' }}>✉️</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="you@example.com"
-                  required
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: 'var(--text-primary)' }}
-                />
-              </div>
+              <label htmlFor="auth-email" className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Email</label>
+              <input
+                id="auth-email"
+                autoComplete="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                className="min-h-11 w-full rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
+                placeholder="name@example.com"
+                aria-invalid={Boolean(error)}
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                Password
-              </label>
-              <div
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200"
-                style={{
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: `1.5px solid ${focusedField === 'password' ? 'var(--accent-green)' : 'var(--glass-border)'}`,
-                  boxShadow: focusedField === 'password' ? '0 0 20px rgba(74,222,128,0.15), var(--glass-inset-shadow)' : 'var(--glass-inset-shadow)',
-                }}
-              >
-                <span style={{ color: 'var(--text-muted)' }}>🔒</span>
+              <label htmlFor="auth-password" className="mb-1.5 block text-sm font-medium text-[var(--text-secondary)]">Password</label>
+              <div className="flex min-h-11 items-center rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] focus-within:border-[var(--accent)]">
                 <input
-                  type="password"
+                  id="auth-password"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="Min. 6 characters"
-                  minLength={6}
+                  onChange={(event) => setPassword(event.target.value)}
                   required
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: 'var(--text-primary)' }}
+                  minLength={6}
+                  className="min-w-0 flex-1 bg-transparent px-3 text-sm text-[var(--text-primary)] outline-none"
+                  placeholder="At least 6 characters"
+                  aria-invalid={Boolean(error)}
                 />
+                <button
+                  type="button"
+                  className="finance-icon-btn muted me-1"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}
+                </button>
               </div>
             </div>
 
-            {/* Error */}
             {error && (
-              <div
-                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm"
-                style={{
-                  background: 'rgba(239,68,68,0.1)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(239,68,68,0.2)',
-                  color: '#ef4444',
-                }}
-              >
-                <span>⚠️</span> {error}
+              <div className="status-message" data-tone="error" role="alert">
+                {error}
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 mt-2 relative overflow-hidden"
-              style={{
-                background: loading ? 'var(--glass-bg-strong)' : 'linear-gradient(135deg, #4ade80, #22c55e)',
-                color: loading ? 'var(--text-muted)' : '#000',
-                boxShadow: loading ? 'none' : '0 4px 20px rgba(74,222,128,0.4), 0 0 40px rgba(74,222,128,0.15)',
-                transform: loading ? 'scale(0.98)' : 'scale(1)',
-              }}
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-ink)] transition-colors hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-55"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Please wait…
-                </span>
-              ) : isLogin ? '→ Sign In' : '→ Create Account'}
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-e-transparent" aria-hidden="true" />
+                  {isLogin ? 'Signing in' : 'Creating account'}
+                </>
+              ) : (
+                <>
+                  {isLogin ? 'Sign in' : 'Create account'}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px" style={{ background: 'var(--glass-border)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>or</span>
-            <div className="flex-1 h-px" style={{ background: 'var(--glass-border)' }} />
-          </div>
-
-          {/* Switch mode link */}
-          <p className="text-center text-sm" style={{ color: 'var(--text-secondary)' }}>
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+          <p className="mt-6 text-center text-sm text-[var(--text-secondary)]">
+            {isLogin ? 'New to Habit Tracker?' : 'Already have an account?'}{' '}
             <button
+              type="button"
+              className="font-medium text-[var(--accent)] underline-offset-4 hover:underline"
               onClick={() => switchMode(isLogin ? 'register' : 'login')}
-              className="font-semibold transition-colors"
-              style={{ color: 'var(--accent-green)' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-green-dark)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--accent-green)'}
             >
-              {isLogin ? 'Register for free' : 'Sign in'}
+              {isLogin ? 'Create an account' : 'Sign in'}
             </button>
           </p>
-
-          {/* Trust badges */}
-          <div className="flex items-center justify-center gap-5 mt-8">
-            {['🔐 Secure', '⚡ Fast', '🎯 Free'].map((badge) => (
-              <span key={badge} className="text-xs" style={{ color: 'var(--text-muted)' }}>{badge}</span>
-            ))}
-          </div>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.7; }
-        }
-        input::placeholder { color: var(--text-muted); }
-      `}</style>
-    </div>
+      </section>
+    </main>
   );
 }

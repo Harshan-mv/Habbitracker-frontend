@@ -1,136 +1,74 @@
-import React, { useEffect, useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
 
-const CATEGORY_COLORS = {
-  EMI: '#f59e0b',
-  Transport: '#3b82f6',
-  Food: '#ef4444',
-  Health: '#10b981',
-  Investment: '#8b5cf6',
-  Entertainment: '#ec4899',
-  'Emergency Fund': '#f97316',
-  Other: '#6b7280',
-  'Savings Goal': '#22c55e',
-  'Emergency Fund Alloc': '#a78bfa',
-};
+const formatAmount = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
 
-/* ─── SVG Donut Chart ─── */
-function DonutChart({ breakdown }) {
-  const entries = Object.entries(breakdown).filter(([, v]) => v > 0);
-  const total = entries.reduce((s, [, v]) => s + v, 0);
+function OutflowBreakdown({ breakdown }) {
+  const entries = breakdown
+    .filter((entry) => Number(entry.amount) > 0)
+    .sort((a, b) => b.amount - a.amount);
+  const total = entries.reduce((sum, entry) => sum + entry.amount, 0);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (total === 0) {
+  if (!total) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          Add expenses or allocations to see breakdown
-        </p>
+      <div className="rounded-[var(--radius-control)] border border-dashed border-[var(--line)] px-4 py-8 text-center">
+        <p className="text-sm font-medium text-[var(--text-primary)]">No outflow recorded</p>
+        <p className="mt-1 text-xs text-[var(--text-secondary)]">Add an expense or allocation to see your breakdown</p>
       </div>
     );
   }
 
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  let cumulative = 0;
-
   return (
-    <div className="flex items-center gap-5">
-      <svg width="150" height="150" viewBox="0 0 150 150" className="flex-shrink-0" style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.1))' }}>
-        {entries.map(([cat, val]) => {
-          const fraction = val / total;
-          const dashLen = circumference * fraction;
-          const dashOffset = -circumference * cumulative;
-          cumulative += fraction;
+    <div>
+      <div className="flex items-end justify-between gap-4 border-b border-[var(--line)] pb-4">
+        <div>
+          <p className="text-sm text-[var(--text-secondary)]">Total outflow</p>
+          <p className="mt-1 text-2xl font-medium tabular-nums text-[var(--text-primary)]">{formatAmount(total)}</p>
+        </div>
+        <span className="text-xs text-[var(--text-muted)]">{entries.length} categories</span>
+      </div>
+      <ul className="mt-4 space-y-4">
+        {entries.map(({ key, name, amount, color }) => {
+          const percentage = Math.round((amount / total) * 100);
           return (
-            <circle
-              key={cat}
-              cx="75"
-              cy="75"
-              r={radius}
-              fill="none"
-              stroke={CATEGORY_COLORS[cat] || '#6b7280'}
-              strokeWidth="20"
-              strokeDasharray={`${dashLen} ${circumference - dashLen}`}
-              strokeDashoffset={mounted ? dashOffset : circumference}
-              style={{
-                transition: 'stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1), stroke-dasharray 0.8s cubic-bezier(.4,0,.2,1)',
-                transformOrigin: '75px 75px',
-                transform: 'rotate(-90deg)',
-              }}
-            />
+            <li key={key}>
+              <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
+                <span className="flex min-w-0 items-center gap-2 text-[var(--text-secondary)]">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} aria-hidden="true" />
+                  <span className="truncate">{name}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-[var(--text-primary)]">
+                  {formatAmount(amount)} <span className="text-xs text-[var(--text-muted)]">({percentage}%)</span>
+                </span>
+              </div>
+              <div
+                className="h-2 overflow-hidden rounded-full bg-[var(--surface-raised)]"
+                role="progressbar"
+                aria-label={`${name} share of outflow`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={percentage}
+              >
+                <div className="h-full rounded-full" style={{ width: `${percentage}%`, background: color }} />
+              </div>
+            </li>
           );
         })}
-        <text
-          x="75"
-          y="72"
-          textAnchor="middle"
-          className="text-xs font-bold"
-          style={{ fill: 'var(--text-primary)', fontSize: '13px' }}
-        >
-          ₹{total.toLocaleString('en-IN')}
-        </text>
-        <text
-          x="75"
-          y="88"
-          textAnchor="middle"
-          style={{ fill: 'var(--text-muted)', fontSize: '9px' }}
-        >
-          Total Outflow
-        </text>
-      </svg>
-
-      {/* Legend */}
-      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        {entries.map(([cat, val]) => (
-          <div key={cat} className="flex items-center gap-2">
-            <span
-              className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-              style={{ background: CATEGORY_COLORS[cat] || '#6b7280', boxShadow: `0 0 8px ${CATEGORY_COLORS[cat] || '#6b7280'}` }}
-            />
-            <span
-              className="text-xs flex-1 truncate"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              {cat}
-            </span>
-            <span
-              className="text-xs font-semibold flex-shrink-0"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              {((val / total) * 100).toFixed(0)}%
-            </span>
-          </div>
-        ))}
-      </div>
+      </ul>
     </div>
   );
 }
 
-/* ─── Charts Panel ─── */
 export default function ChartsPanel() {
-  const getCategoryBreakdown = useFinanceStore((s) => s.getCategoryBreakdown);
+  const getCategoryBreakdown = useFinanceStore((state) => state.getCategoryBreakdown);
   const breakdown = getCategoryBreakdown();
 
   return (
-    <div className="space-y-4">
-      {/* Donut */}
-      <div
-        className="finance-card rounded-2xl p-4"
-      >
-        <h3
-          className="text-xs font-bold mb-3 uppercase tracking-wider"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Outflow Breakdown
-        </h3>
-        <DonutChart breakdown={breakdown} />
+    <section className="app-surface p-4 sm:p-5" aria-labelledby="outflow-heading">
+      <div className="mb-4">
+        <h3 id="outflow-heading" className="text-sm font-medium text-[var(--text-primary)]">Outflow breakdown</h3>
+        <p className="mt-1 text-xs text-[var(--text-muted)]">Expenses and planned allocations by category</p>
       </div>
-    </div>
+      <OutflowBreakdown breakdown={breakdown} />
+    </section>
   );
 }

@@ -1,66 +1,38 @@
-import React from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
-const fmt = (n) =>
-  '₹' +
-  Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const formatAmount = (value) => `₹${Math.abs(value).toLocaleString('en-IN', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})}`;
 
 export default function FinanceSummary() {
-  const getTotals = useFinanceStore((s) => s.getTotals);
+  const getTotals = useFinanceStore((state) => state.getTotals);
   const { totalIncome, totalExpenses, remaining } = getTotals();
 
-  const cards = [
+  const summaries = [
+    { label: 'Income this month', value: formatAmount(totalIncome), detail: 'Including carry-forward' },
+    { label: 'Expenses', value: formatAmount(totalExpenses), detail: 'Recorded this month' },
     {
-      label: 'Total Income',
-      value: fmt(totalIncome),
-      icon: TrendingUp,
-      color: 'var(--accent-green)',
-      bg: 'rgba(74,222,128,0.1)',
-    },
-    {
-      label: 'Total Expenses',
-      value: fmt(totalExpenses),
-      icon: TrendingDown,
-      color: 'var(--accent-red)',
-      bg: 'rgba(248,113,113,0.1)',
-    },
-    {
-      label: 'Remaining',
-      value: (remaining < 0 ? '-' : '') + fmt(remaining),
-      icon: Wallet,
-      color: remaining >= 0 ? 'var(--accent-green)' : 'var(--accent-red)',
-      bg: remaining >= 0 ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)',
+      label: 'Available after plans',
+      value: `${remaining < 0 ? '−' : ''}${formatAmount(remaining)}`,
+      detail: 'After savings allocations',
+      tone: remaining < 0 ? 'negative' : 'positive',
     },
   ];
 
   return (
-    <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-      {cards.map(({ label, value, icon: Icon, color, bg }) => (
-        <div
-          key={label}
-          className="rounded-2xl p-4 flex items-center gap-3 transition-all finance-card"
-          style={{
-            background: 'var(--glass-bg)',
-            border: '1px solid var(--glass-border)',
-          }}
-        >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: bg, boxShadow: `0 0 12px ${bg}` }}
+    <section className="grid gap-3 sm:grid-cols-3" aria-label="Monthly summary">
+      {summaries.map(({ label, value, detail, tone }) => (
+        <article key={label} className="app-surface min-w-0 p-4">
+          <h3 className="text-sm text-[var(--text-secondary)]">{label}</h3>
+          <p
+            className={`mt-2 truncate text-2xl font-medium leading-tight tabular-nums ${tone === 'negative' ? 'text-[var(--negative)]' : tone === 'positive' ? 'text-[var(--positive)]' : 'text-[var(--text-primary)]'}`}
           >
-            <Icon size={18} style={{ color }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: 'var(--text-muted)' }}>
-              {label}
-            </p>
-            <p className="text-lg font-bold leading-tight" style={{ color, textShadow: `0 0 12px ${color}40` }}>
-              {value}
-            </p>
-          </div>
-        </div>
+            {value}
+          </p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{detail}</p>
+        </article>
       ))}
-    </div>
+    </section>
   );
 }

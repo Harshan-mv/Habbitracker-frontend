@@ -18,16 +18,13 @@ export default function StatPanel() {
         style={{ height: `${HEADER_HEIGHT}px`, borderBottom: '1px solid var(--glass-border)' }}
       >
         <div className="flex-1 text-center">
-          <div className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>current</div>
-          <div className="text-[10px] font-medium leading-tight" style={{ color: 'var(--text-secondary)' }}>streak</div>
+          <div className="text-[11px] leading-tight" style={{ color: 'var(--text-muted)' }}>Current streak</div>
         </div>
         <div className="flex-1 text-center">
-          <div className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>longest</div>
-          <div className="text-[10px] font-medium leading-tight" style={{ color: 'var(--text-secondary)' }}>streak</div>
+          <div className="text-[11px] leading-tight" style={{ color: 'var(--text-muted)' }}>Longest</div>
         </div>
         <div className="flex-1 text-center">
-          <div className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>total</div>
-          <div className="text-[10px] font-medium leading-tight" style={{ color: 'var(--text-secondary)' }}>count</div>
+          <div className="text-[11px] leading-tight" style={{ color: 'var(--text-muted)' }}>Completions</div>
         </div>
       </div>
 
@@ -66,12 +63,11 @@ export default function StatPanel() {
               {/* Current */}
               <div className="flex-1 flex items-center justify-center">
                 <div
-                  className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold"
+                  className="w-9 h-9 rounded-full border flex items-center justify-center text-xs font-medium tabular-nums"
                   style={{
-                    borderColor: `${habit.color}80`,
-                    color: habit.color,
-                    background: `${habit.color}10`,
-                    boxShadow: current > 0 ? `0 0 10px ${habit.color}25` : 'none',
+                    borderColor: current > 0 ? 'var(--accent)' : 'var(--line)',
+                    color: current > 0 ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: 'var(--surface-raised)',
                   }}
                 >
                   {current}
@@ -81,12 +77,11 @@ export default function StatPanel() {
               {/* Longest */}
               <div className="flex-1 flex items-center justify-center">
                 <div
-                  className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold"
+                  className="w-9 h-9 rounded-full border flex items-center justify-center text-xs font-medium tabular-nums"
                   style={{
-                    borderColor: `${habit.color}80`,
-                    color: habit.color,
-                    background: `${habit.color}10`,
-                    boxShadow: longest > 0 ? `0 0 10px ${habit.color}25` : 'none',
+                    borderColor: 'var(--line)',
+                    color: 'var(--text-secondary)',
+                    background: 'var(--surface-raised)',
                   }}
                 >
                   {longest}

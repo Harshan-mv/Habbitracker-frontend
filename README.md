@@ -6,7 +6,7 @@ This is the frontend of the Habit Tracker application, built with React, Vite, a
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16 or higher)
+- [Node.js](https://nodejs.org/) (22.13 or higher, within Node 22)
 - [npm](https://www.npmjs.com/)
 
 ### Installation
@@ -22,10 +22,14 @@ This is the frontend of the Habit Tracker application, built with React, Vite, a
    ```
 
 3. Set up environment variables:
-   Create a `.env` file in the `client` directory and add the backend URL:
+   Copy `.env.example` to `.env` in the `client` directory for local development:
    ```env
    VITE_API_URL=http://localhost:5000/api
    ```
+
+For Vercel, set the project root directory to `client`, use the Vite framework preset, build command `npm run build`, and output directory `dist`. `.env.production` points to the Render API. Set `VITE_API_URL` to `https://habbitracker-backend-be0e.onrender.com/api` in Vercel for Production and Preview if previews should use the same backend, then redeploy.
+
+The API client retries safe GET requests during Render wake-up failures and retries writes only when they carry an `Idempotency-Key`. Retry count, backoff, timeout, and API URL can be configured through the `VITE_API_*` environment variables.
 
 ### Running the Application
 

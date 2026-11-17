@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { Target, Shield, CreditCard, Pencil, ArrowRightLeft, RotateCcw } from 'lucide-react';
+import { Target, Shield, CreditCard, Pencil, ArrowRightLeft, RotateCcw, Plus } from 'lucide-react';
+import GoalCard from './GoalCard';
+import AddGoalModal from './AddGoalModal';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)' }}>
+    <div className="w-full h-2 rounded-full overflow-hidden bg-[var(--surface-raised)]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
       <div
         className="h-full rounded-full"
         style={{
           width: `${pct}%`,
           background: color,
-          boxShadow: `0 0 12px ${color}80`,
-          transition: 'width 0.6s cubic-bezier(.4,0,.2,1)',
+          transition: 'width 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       />
     </div>
@@ -24,7 +25,9 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
   const [val, setVal] = useState(value);
 
   const save = () => {
-    onSave(Number(val));
+    const number = Number(val);
+    if (Number.isFinite(number) && number >= 0) onSave(number);
+    else setVal(value);
     setEditing(false);
   };
 
@@ -35,10 +38,13 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
         <input
           className="finance-input w-24 text-base font-bold"
           type="number"
+          min="0"
+          step="1"
+          aria-label="Edit goal amount"
           value={val}
           onChange={(e) => setVal(e.target.value)}
           autoFocus
-          onKeyDown={(e) => e.key === 'Enter' && save()}
+          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
           onBlur={save}
         />
       </div>
@@ -47,15 +53,17 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
 
   return (
     <button
-      className="flex items-center gap-1 group"
+      type="button"
+      aria-label={`Edit amount ${value}`}
+      className="flex min-h-9 items-center gap-2 group"
       onClick={() => { setVal(value); setEditing(true); }}
     >
-      <span className="text-base font-bold" style={{ color }}>
+      <span className="text-base font-medium tabular-nums" style={{ color }}>
         {prefix}{Number(value).toLocaleString('en-IN')}
       </span>
       <Pencil
         size={12}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
+        className="opacity-100 transition-opacity"
         style={{ color: 'var(--text-muted)' }}
       />
     </button>
@@ -63,37 +71,39 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
 }
 
 export default function GoalsPanel() {
-  const { monthData, updateGoals, addToGoal, resetGoal } = useFinanceStore();
+  const { monthData, updateGoals, addToGoal, resetGoal, customGoals, isLoadingGoals, goalsError, fetchGoals } = useFinanceStore();
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [showGoalForm, setShowGoalForm] = useState(false);
 
   const goals = [
     {
       key: 'emi',
-      label: 'EMI Tracker',
+      label: 'EMI tracker',
       icon: CreditCard,
-      color: '#f59e0b',
-      bg: 'rgba(245,158,11,0.15)',
+      color: 'var(--warning)',
+      bg: 'var(--surface-raised)',
       value: monthData.emiTotalMonths - monthData.emiMonthsLeft,
       max: monthData.emiTotalMonths,
       subtitle: `${monthData.emiMonthsLeft} months remaining`,
-      align: 'right',
+      align: 'left',
       editFields: [
-        { label: 'Months Left', field: 'emiMonthsLeft', val: monthData.emiMonthsLeft },
-        { label: 'Total Months', field: 'emiTotalMonths', val: monthData.emiTotalMonths },
+        { label: 'Months left', field: 'emiMonthsLeft', val: monthData.emiMonthsLeft },
+        { label: 'Total months', field: 'emiTotalMonths', val: monthData.emiTotalMonths },
       ],
     },
     {
       key: 'savings',
-      label: 'Savings Goal',
-      description: 'Monthly allocation → accumulates across months',
+      label: 'Savings goal',
+      description: 'Monthly allocation, carried across months',
       icon: Target,
-      color: 'var(--accent-green)',
-      bg: 'rgba(74,222,128,0.15)',
+      color: 'var(--accent)',
+      bg: 'var(--surface-raised)',
       value: monthData.savingsAchieved,
       max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevSavingsAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.savingsGoal || 0).toLocaleString('en-IN')})`,
       align: 'left',
       editFields: [
-        { label: 'This Month', field: 'savingsGoal', val: monthData.savingsGoal || 0 },
+        { label: 'This month', field: 'savingsGoal', val: monthData.savingsGoal || 0 },
         { label: 'Target', field: 'savingsTarget', val: monthData.savingsTarget || 0 },
       ],
       showAdd: true,
@@ -101,17 +111,17 @@ export default function GoalsPanel() {
     },
     {
       key: 'emergency',
-      label: 'Emergency Fund',
-      description: 'Monthly allocation → carries forward',
+      label: 'Emergency fund',
+      description: 'Monthly allocation, carried forward',
       icon: Shield,
-      color: 'var(--accent-purple)',
-      bg: 'rgba(167,139,250,0.15)',
+      color: 'var(--info)',
+      bg: 'var(--surface-raised)',
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevEmergencyAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.emergencyFund || 0).toLocaleString('en-IN')})`,
-      align: 'center',
+      align: 'left',
       editFields: [
-        { label: 'This Month', field: 'emergencyFund', val: monthData.emergencyFund || 0 },
+        { label: 'This month', field: 'emergencyFund', val: monthData.emergencyFund || 0 },
         { label: 'Target', field: 'emergencyTarget', val: monthData.emergencyTarget || 0 },
       ],
       showAdd: true,
@@ -122,11 +132,11 @@ export default function GoalsPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-2">
-        <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+        <h3 className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
           <Target size={14} /> Goal Tracking
         </h3>
         {(monthData.carryForward || 0) > 0 && (
-          <span className="text-[10px] font-semibold px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--accent-green)', border: '1px solid rgba(74,222,128,0.2)' }}>
+          <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
             <ArrowRightLeft size={10} /> ₹{monthData.carryForward.toLocaleString('en-IN')} Carry
           </span>
         )}
@@ -140,19 +150,13 @@ export default function GoalsPanel() {
           return (
             <div 
               key={g.key} 
-              className="finance-card rounded-2xl p-5 group relative overflow-hidden"
+              className="finance-card rounded-[var(--radius-card)] p-4 sm:p-5 group relative"
             >
-              {/* Status Indicator */}
-              <div 
-                className="absolute top-0 left-0 w-1 h-full" 
-                style={{ background: g.color, boxShadow: `0 0 16px ${g.color}` }}
-              />
-
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
-                    style={{ background: g.bg, boxShadow: `0 0 16px ${g.bg}` }}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center"
+                    style={{ background: g.bg }}
                   >
                     <Icon size={20} style={{ color: g.color }} />
                   </div>
@@ -161,7 +165,7 @@ export default function GoalsPanel() {
                       {g.label}
                     </h4>
                     {g.description && (
-                      <p className="text-[10px] opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {g.description}
                       </p>
                     )}
@@ -169,15 +173,16 @@ export default function GoalsPanel() {
                 </div>
                 <div className="flex items-center gap-3">
                   {pct !== null && (
-                    <span className="text-lg font-black tracking-tighter" style={{ color: g.color, textShadow: `0 0 12px ${g.color}40` }}>
+                    <span className="text-lg font-medium tabular-nums" style={{ color: g.color }}>
                       {pct}%
                     </span>
                   )}
                   {g.canReset && (
                     <button
                       onClick={() => confirm('Reset accumulated total?') && resetGoal(g.key)}
-                      className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/10 text-red-500"
+                      className="finance-icon-btn red"
                       title="Reset Total"
+                      aria-label={`Reset ${g.label}`}
                     >
                       <RotateCcw size={14} />
                     </button>
@@ -209,13 +214,13 @@ export default function GoalsPanel() {
                         g.align === 'right' ? 'items-end' : 
                         g.align === 'center' ? 'items-center' : 'items-start'
                       }`}>
-                        <span className="text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">
+                        <span className="mb-1 text-xs font-medium text-[var(--text-secondary)]">
                           {ef.label}
                         </span>
                         <EditableValue
                           value={ef.val}
                           color="var(--text-primary)"
-                          prefix={ef.label === 'Months Left' || ef.label === 'Total Months' ? '' : '₹'}
+                          prefix={ef.label === 'Months left' || ef.label === 'Total months' ? '' : '₹'}
                           onSave={(v) => updateGoals({ [ef.field]: v })}
                         />
                       </div>
@@ -223,20 +228,22 @@ export default function GoalsPanel() {
                   </div>
 
                   {g.showAdd && (
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="ms-4 flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => addToGoal(g.key, 1000)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33`, boxShadow: `0 0 12px ${g.bg}` }}
+                        className="min-h-9 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-3 text-xs font-medium hover:bg-[var(--surface-hover)]"
+                        aria-label={`Add 1,000 to ${g.label}`}
                       >
-                        +1k
+                        +₹1k
                       </button>
                       <button
+                        type="button"
                         onClick={() => addToGoal(g.key, 5000)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold hover:brightness-125 transition-all"
-                        style={{ background: g.bg, color: g.color, border: `1px solid ${g.color}33`, boxShadow: `0 0 12px ${g.bg}` }}
+                        className="min-h-9 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-3 text-xs font-medium hover:bg-[var(--surface-hover)]"
+                        aria-label={`Add 5,000 to ${g.label}`}
                       >
-                        +5k
+                        +₹5k
                       </button>
                     </div>
                   )}
@@ -245,7 +252,34 @@ export default function GoalsPanel() {
             </div>
           );
         })}
+        {isLoadingGoals && (
+          <p className="py-2 text-sm text-[var(--text-muted)]" role="status">Loading custom goals</p>
+        )}
+        {goalsError && (
+          <div className="status-message flex flex-wrap items-center justify-between gap-2" data-tone="error" role="alert">
+            <span>{goalsError}</span>
+            <button type="button" className="rounded-[var(--radius-control)] px-3 py-1.5 text-sm" onClick={() => fetchGoals(useFinanceStore.getState().currentMonth)}>
+              Try again
+            </button>
+          </div>
+        )}
+        {customGoals.map((goal) => (
+          <GoalCard key={`${goal._id}-${goal.monthAllocation || 0}`} goal={goal} onEdit={() => setEditingGoal(goal)} />
+        ))}
+        <button
+          type="button"
+          onClick={() => { setEditingGoal(null); setShowGoalForm(true); }}
+          className="flex min-h-10 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-dashed border-[var(--line)] text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-raised)] hover:text-[var(--accent)]"
+        >
+          <Plus size={16} aria-hidden="true" /> Add Goal
+        </button>
       </div>
+      {(showGoalForm || editingGoal) && (
+        <AddGoalModal
+          goal={editingGoal}
+          onClose={() => { setShowGoalForm(false); setEditingGoal(null); }}
+        />
+      )}
     </div>
   );
 }

@@ -1,17 +1,24 @@
 import { create } from 'zustand';
-import api from '../utils/axiosConfig';
+import api, { createIdempotencyKey } from '../utils/axiosConfig';
+import useToastStore from './useToastStore';
+
+const requestMessage = (error, fallback) => error.response?.data?.error || error.response?.data?.message || fallback;
 
 const useTaskStore = create((set, get) => ({
   tasks: [],
   isLoadingTasks: false,
+  taskError: null,
+  taskLoadError: null,
 
   fetchTasks: async () => {
-    set({ isLoadingTasks: true });
+    set({ isLoadingTasks: true, taskError: null, taskLoadError: null });
     try {
       const res = await api.get('/tasks');
-      set({ tasks: res.data });
+      set({ tasks: res.data, taskLoadError: null });
     } catch (error) {
-      console.error('Failed to fetch tasks', error);
+      const message = requestMessage(error, 'Could not load tasks. Try again.');
+      set({ taskError: message, taskLoadError: message });
+      useToastStore.getState().addToast(message, 'error');
     } finally {
       set({ isLoadingTasks: false });
     }
@@ -19,70 +26,89 @@ const useTaskStore = create((set, get) => ({
 
   addTask: async (taskData) => {
     try {
-      const res = await api.post('/tasks', taskData);
-      set((state) => ({ tasks: [...state.tasks, res.data] }));
+      const res = await api.post('/tasks', taskData, {
+        headers: { 'Idempotency-Key': createIdempotencyKey() },
+      });
+      set((state) => ({ tasks: [...state.tasks, res.data], taskError: null }));
+      useToastStore.getState().addToast('Task added');
+      return res.data;
     } catch (error) {
-      console.error('Failed to add task', error);
+      const message = requestMessage(error, 'Could not add this task.');
+      set({ taskError: message });
+      useToastStore.getState().addToast(message, 'error');
+      throw error;
     }
   },
 
   updateTask: async (id, updates) => {
-    // Optimistic update
+    const previousTask = get().tasks.find((task) => task._id === id);
+    if (!previousTask) return;
+
     set((state) => ({
-      tasks: state.tasks.map((t) => (t._id === id ? { ...t, ...updates } : t)),
+      tasks: state.tasks.map((task) => (task._id === id ? { ...task, ...updates } : task)),
+      taskError: null,
     }));
+
     try {
       const res = await api.put(`/tasks/${id}`, updates);
-      // Ensure backend sync
       set((state) => ({
-        tasks: state.tasks.map((t) => (t._id === id ? res.data : t)),
+        tasks: state.tasks.map((task) => (task._id === id ? res.data : task)),
       }));
+      return res.data;
     } catch (error) {
-      console.error('Failed to update task', error);
-      get().fetchTasks(); // rollback on error
+      const message = requestMessage(error, 'Could not save this task change.');
+      set((state) => ({
+        tasks: state.tasks.map((task) => (task._id === id ? previousTask : task)),
+        taskError: message,
+      }));
+      useToastStore.getState().addToast(message, 'error');
     }
   },
 
   deleteTask: async (id) => {
-    // Optimistic delete
-    set((state) => ({ tasks: state.tasks.filter((t) => t._id !== id) }));
+    const previousTasks = get().tasks;
+    const removedTask = previousTasks.find((task) => task._id === id);
+    set((state) => ({ tasks: state.tasks.filter((task) => task._id !== id), taskError: null }));
+
     try {
       await api.delete(`/tasks/${id}`);
+      useToastStore.getState().addToast('Task deleted');
     } catch (error) {
-      console.error('Failed to delete task', error);
-      get().fetchTasks(); // rollback on error
+      const message = requestMessage(error, 'Could not delete this task.');
+      set({ tasks: previousTasks, taskError: message });
+      useToastStore.getState().addToast(message, 'error');
+      if (!removedTask) throw error;
     }
   },
 
-  reorderTasks: async (startIndex, endIndex, filters = {}) => {
-    const { tasks } = get();
+  reorderTasks: async (sourceIndex, destinationIndex, visibleTasks) => {
+    if (!visibleTasks || sourceIndex === destinationIndex) return;
 
-    // Reordering usually happens within a filtered view (e.g. sorted by Date, or filtered by Status)
-    // However, the spec says "tasks can be grabbed by a handle and reordered vertically. Priority badge updates on drop."
-    // Wait, the spec says "drag-and-drop reorder by this [Priority]". This implies drag and drop reordering *changes* priority? Or is it manually sorting and updating a priority?
-    // Let's re-read: "Drag & Drop Priority Reordering — tasks can be grabbed by a handle and reordered vertically. Priority badge updates on drop."
-    // This sounds like if I drag it to the top, it becomes High priority? Or maybe there are Kanban columns for High/Medium/Low?
-    // In Kanban board, we drag between status/priority. In a list view, dragging and dropping changes its manual 'order'.
-    // We will just update 'order' locally and send batch update to server.
+    const previousTasks = get().tasks;
+    const reorderedVisible = Array.from(visibleTasks);
+    const [moved] = reorderedVisible.splice(sourceIndex, 1);
+    reorderedVisible.splice(destinationIndex, 0, moved);
 
-    const newTasks = Array.from(tasks);
-    const [removed] = newTasks.splice(startIndex, 1);
-    newTasks.splice(endIndex, 0, removed);
+    const visibleIds = new Set(reorderedVisible.map((task) => task._id));
+    const orderedTasks = [...previousTasks].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const slots = orderedTasks.flatMap((task, index) => (visibleIds.has(task._id) ? [index] : []));
+    slots.forEach((slot, index) => {
+      orderedTasks[slot] = reorderedVisible[index];
+    });
 
-    // Update 'order' property for the list based on new index to maintain sorting
-    const updatedTasks = newTasks.map((t, index) => ({ ...t, order: index }));
-
-    set({ tasks: updatedTasks });
+    const updatedTasks = orderedTasks.map((task, order) => ({ ...task, order }));
+    set({ tasks: updatedTasks, taskError: null });
 
     try {
-      // Send bulk update to backend
-      const updates = updatedTasks.map(t => ({ id: t._id, order: t.order }));
+      const updates = updatedTasks.map((task) => ({ id: task._id, order: task.order }));
       await api.put('/tasks/batch', { updates });
+      useToastStore.getState().addToast('Task order saved');
     } catch (error) {
-      console.error('Failed to batch update tasks', error);
-      get().fetchTasks(); // rollback on error
+      const message = requestMessage(error, 'Could not save the new task order.');
+      set({ tasks: previousTasks, taskError: message });
+      useToastStore.getState().addToast(message, 'error');
     }
-  }
+  },
 }));
 
 export default useTaskStore;

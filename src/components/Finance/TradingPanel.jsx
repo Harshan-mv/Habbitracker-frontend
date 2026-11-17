@@ -1,86 +1,54 @@
-import React from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { BarChart3 } from 'lucide-react';
+
+const formatAmount = (value) => `₹${Math.abs(value).toLocaleString('en-IN')}`;
 
 export default function TradingPanel() {
   const { monthData, updateTrading, getTradingCapital } = useFinanceStore();
   const capital = getTradingCapital();
   const netPnL = monthData.realizedPnL - monthData.charges;
-  const isProfit = netPnL >= 0;
 
   return (
-    <div
-      className="finance-card rounded-2xl p-4"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: 'rgba(167,139,250,0.12)', boxShadow: '0 0 12px rgba(167,139,250,0.2)' }}
-        >
-          <BarChart3 size={15} style={{ color: 'var(--accent-purple)' }} />
-        </div>
-        <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-          Trading P&L
-        </h3>
+    <section className="app-surface p-4 sm:p-5" aria-labelledby="trading-heading">
+      <div className="mb-4">
+        <h3 id="trading-heading" className="text-sm font-medium text-[var(--text-primary)]">Trading summary</h3>
+        <p className="mt-1 text-xs text-[var(--text-muted)]">Based on investment expenses and recorded results</p>
       </div>
 
-      <div className="space-y-3">
-        {/* Capital (auto from Investment expenses) */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Capital Deployed</span>
-          <span className="text-sm font-bold" style={{ color: 'var(--accent-purple)' }}>
-            ₹{capital.toLocaleString('en-IN')}
-          </span>
+      <dl className="space-y-3">
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] pb-3">
+          <dt className="text-sm text-[var(--text-secondary)]">Capital deployed</dt>
+          <dd className="text-sm font-medium tabular-nums text-[var(--text-primary)]">{formatAmount(capital)}</dd>
         </div>
-        <div style={{ borderTop: '1px solid var(--glass-border)', margin: '4px 0' }} />
-
-        {/* Realized P&L */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Realized P&L</span>
+        <label className="flex items-center justify-between gap-4">
+          <span className="text-sm text-[var(--text-secondary)]">Realized P&amp;L</span>
           <input
-            className="finance-input w-28 text-right text-sm font-semibold"
+            className="finance-input w-32 text-right tabular-nums"
             type="number"
             value={monthData.realizedPnL || ''}
             placeholder="0"
-            onChange={(e) => updateTrading('realizedPnL', e.target.value)}
-            style={{ color: monthData.realizedPnL >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}
+            aria-label="Realized profit and loss"
+            onChange={(event) => updateTrading('realizedPnL', event.target.value)}
           />
-        </div>
-
-        {/* Charges */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Charges / Brokerage</span>
+        </label>
+        <label className="flex items-center justify-between gap-4">
+          <span className="text-sm text-[var(--text-secondary)]">Charges / brokerage</span>
           <input
-            className="finance-input w-28 text-right text-sm font-semibold"
+            className="finance-input w-32 text-right tabular-nums"
             type="number"
+            min="0"
             value={monthData.charges || ''}
             placeholder="0"
-            onChange={(e) => updateTrading('charges', e.target.value)}
-            style={{ color: 'var(--accent-red)' }}
+            aria-label="Charges and brokerage"
+            onChange={(event) => updateTrading('charges', event.target.value)}
           />
+        </label>
+        <div className="flex items-center justify-between gap-4 border-t border-[var(--line)] pt-3">
+          <dt className="text-sm font-medium text-[var(--text-primary)]">Net P&amp;L</dt>
+          <dd className={`text-base font-medium tabular-nums ${netPnL >= 0 ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
+            {netPnL < 0 ? '−' : ''}{formatAmount(netPnL)}
+          </dd>
         </div>
-
-        <div style={{ borderTop: '1px solid var(--glass-border)', margin: '4px 0' }} />
-
-        {/* Net P&L */}
-        <div
-          className="flex items-center justify-between p-3 rounded-xl"
-          style={{
-            background: isProfit ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
-            border: `1px solid ${isProfit ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)'}`,
-          }}
-        >
-          <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-            Net P&L
-          </span>
-          <span
-            className="text-base font-extrabold"
-            style={{ color: isProfit ? 'var(--accent-green)' : 'var(--accent-red)', textShadow: `0 0 12px ${isProfit ? 'var(--accent-green)' : 'var(--accent-red)'}40` }}
-          >
-            {isProfit ? '+' : '-'}₹{Math.abs(netPnL).toLocaleString('en-IN')}
-          </span>
-        </div>
-      </div>
-    </div>
+      </dl>
+    </section>
   );
 }

@@ -1,262 +1,278 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { GripVertical, MessageSquare, Trash2, CheckCircle2, Clock, AlertCircle, Ban } from 'lucide-react';
-import { format, differenceInDays, isPast, isToday } from 'date-fns';
+/* eslint-disable react-hooks/refs -- Drag-and-drop requires forwarding its refs and props to the item. */
+import { useMemo, useState } from 'react';
+import { CalendarDays, CheckCircle2, GripVertical, MessageSquare, Trash2 } from 'lucide-react';
+import { differenceInCalendarDays, format, isPast, isToday } from 'date-fns';
 import useTaskStore from '../../store/useTaskStore';
-import { clsx } from 'clsx';
 
-const STATUS_COLORS = {
-  'Not Started': 'var(--status-gray)',
-  'In Progress': 'var(--status-amber)',
-  'Done': 'var(--accent-green)',
-  'Blocked': 'var(--status-red)',
+const STATUSES = ['Not Started', 'In Progress', 'Done', 'Blocked'];
+const PRIORITIES = ['High', 'Medium', 'Low'];
+const priorityColor = {
+  High: 'var(--negative)',
+  Medium: 'var(--warning)',
+  Low: 'var(--text-secondary)',
 };
 
-const PRIORITY_COLORS = {
-  'High': '#ef4444',
-  'Medium': '#f59e0b',
-  'Low': '#3b82f6',
+const toDateInput = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : format(date, 'yyyy-MM-dd');
 };
 
-export default function TaskItem({ task, provided, isDragging, isKanban }) {
+const toDateValue = (value) => (value ? new Date(`${value}T12:00:00`).toISOString() : '');
+
+function calculateProgress(timeline) {
+  if (!timeline?.startDate || !timeline?.endDate) return 0;
+  const start = new Date(timeline.startDate);
+  const end = new Date(timeline.endDate);
+  const today = new Date();
+  const totalDays = differenceInCalendarDays(end, start);
+  if (totalDays <= 0) return today >= end ? 100 : 0;
+  if (today < start) return 0;
+  return Math.min(100, Math.max(0, (differenceInCalendarDays(today, start) / totalDays) * 100));
+}
+
+export default function TaskItem({ task, provided, isDragging }) {
   const { updateTask, deleteTask } = useTaskStore();
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [showRemarks, setShowRemarks] = useState(false);
-  const titleRef = useRef(null);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(task.title);
+  const [budgetDraft, setBudgetDraft] = useState(String(task.budget?.amount ?? 0));
+  const [remarksDraft, setRemarksDraft] = useState(task.remarks || '');
+  const [timelineDraft, setTimelineDraft] = useState({
+    startDate: toDateInput(task.timeline?.startDate),
+    endDate: toDateInput(task.timeline?.endDate),
+  });
+  const [showDetails, setShowDetails] = useState(false);
 
-  const handleTitleBlur = () => {
-    setIsEditingTitle(false);
-    const newTitle = titleRef.current.innerText.trim();
-    if (newTitle && newTitle !== task.title) {
-      updateTask(task._id, { title: newTitle });
-    } else {
-      titleRef.current.innerText = task.title;
+  const progress = useMemo(() => calculateProgress(task.timeline), [task.timeline]);
+  const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+  const isOverdue = dueDate && isPast(dueDate) && !isToday(dueDate) && task.status !== 'Done';
+  const cardStyle = {
+    ...provided.draggableProps.style,
+    background: 'var(--surface)',
+    borderColor: isOverdue ? 'color-mix(in srgb, var(--negative) 60%, var(--line))' : 'var(--line)',
+    opacity: task.status === 'Done' ? 0.88 : 1,
+  };
+
+  const saveTitle = () => {
+    setEditingTitle(false);
+    const nextTitle = titleDraft.trim();
+    if (nextTitle && nextTitle !== task.title) updateTask(task._id, { title: nextTitle });
+    else setTitleDraft(task.title);
+  };
+
+  const saveBudget = () => {
+    const amount = Number(budgetDraft);
+    if (!Number.isFinite(amount) || amount < 0) {
+      setBudgetDraft(String(task.budget?.amount ?? 0));
+      return;
+    }
+    if (amount !== Number(task.budget?.amount || 0)) {
+      updateTask(task._id, {
+        budget: { ...task.budget, amount, currency: task.budget?.currency || '₹' },
+      });
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      titleRef.current.blur();
+  const saveRemarks = () => {
+    if (remarksDraft !== (task.remarks || '')) updateTask(task._id, { remarks: remarksDraft });
+  };
+
+  const saveTimeline = (field, value) => {
+    const next = { ...timelineDraft, [field]: value };
+    setTimelineDraft(next);
+    updateTask(task._id, {
+      timeline: {
+        ...task.timeline,
+        [field]: toDateValue(value),
+      },
+    });
+  };
+
+  const handleTitleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.currentTarget.blur();
+    } else if (event.key === 'Escape') {
+      setTitleDraft(task.title);
+      setEditingTitle(false);
     }
   };
-
-  const toggleStatus = () => {
-    const statuses = ['Not Started', 'In Progress', 'Done', 'Blocked'];
-    const nextIndex = (statuses.indexOf(task.status) + 1) % statuses.length;
-    updateTask(task._id, { status: statuses[nextIndex] });
-  };
-
-  // Timeline Progress Calculation
-  const calculateProgress = () => {
-    if (!task.timeline?.startDate || !task.timeline?.endDate) return 0;
-    const start = new Date(task.timeline.startDate);
-    const end = new Date(task.timeline.endDate);
-    const today = new Date();
-
-    if (isPast(end) && !isToday(end)) return 100;
-    if (today < start) return 0;
-
-    const totalDays = differenceInDays(end, start);
-    const elapsedDays = differenceInDays(today, start);
-    return Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
-  };
-
-  const progress = calculateProgress();
-  const isOverdue = task.dueDate && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) && task.status !== 'Done';
 
   return (
-    <div
+    <article
       ref={provided.innerRef}
       {...provided.draggableProps}
-      className={clsx(
-        "group relative flex flex-col mb-3 rounded-xl border transition-all",
-        isDragging ? "shadow-xl scale-[1.02] z-50" : "hover:shadow-md",
-        task.status === 'Done' ? "opacity-75" : "opacity-100",
-        isOverdue ? "border-l-4 border-l-red-500" : "border-transparent"
-      )}
-      style={{ 
-        background: isDragging ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', 
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderColor: isDragging ? 'var(--accent-green)' : 'var(--glass-border)',
-        boxShadow: isDragging 
-          ? '0 16px 40px rgba(0,0,0,0.3), 0 0 20px rgba(74,222,128,0.15), inset 0 1px 0 rgba(255,255,255,0.06)' 
-          : 'var(--glass-shadow), var(--glass-inset-shadow)',
-        ...provided.draggableProps.style 
-      }}
+      className={`rounded-[var(--radius-card)] border p-3 transition-colors sm:p-4 ${isDragging ? 'shadow-lg' : ''}`}
+      style={cardStyle}
     >
-      <div className={clsx("flex p-4 gap-4", isKanban ? "flex-col" : "items-center")}>
-        <div className="flex items-center gap-4 w-full">
-          {/* Drag Handle */}
-          <div 
-            {...provided.dragHandleProps}
-            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <GripVertical size={18} />
-          </div>
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          {...provided.dragHandleProps}
+          className="finance-icon-btn muted -ms-1 h-9 w-8 shrink-0 cursor-grab active:cursor-grabbing"
+          aria-label={`Reorder ${task.title}`}
+          title="Drag to reorder"
+        >
+          <GripVertical size={17} aria-hidden="true" />
+        </button>
 
-          {/* Status Toggle */}
-          <button 
-            onClick={toggleStatus}
-            className="flex-shrink-0 transition-transform active:scale-90"
-            style={{ color: STATUS_COLORS[task.status] }}
-          >
-            {task.status === 'Done' ? <CheckCircle2 size={22} /> : 
-             task.status === 'In Progress' ? <Clock size={22} /> :
-             task.status === 'Blocked' ? <Ban size={22} /> :
-             <div className="w-5 h-5 rounded-full border-2 border-current opacity-30" />}
-          </button>
-
-          {/* Title (Inline Edit) */}
-          <div className="flex-1 min-w-0">
-            <div
-              ref={titleRef}
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={handleTitleBlur}
-              onKeyDown={handleKeyDown}
-              className={clsx(
-                "text-base font-medium outline-none truncate w-full",
-                task.status === 'Done' && "line-through opacity-50"
-              )}
-              style={{ color: 'var(--text-primary)' }}
+        <div className="min-w-0 flex-1">
+          {editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={(event) => setTitleDraft(event.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={handleTitleKeyDown}
+              aria-label="Task title"
+              className="finance-input w-full font-medium"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditingTitle(true)}
+              className={`block max-w-full truncate text-left text-sm font-medium hover:underline underline-offset-4 ${task.status === 'Done' ? 'line-through text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}
+              aria-label={`Edit task title: ${task.title}`}
             >
               {task.title}
-            </div>
-            
-            {/* Timeline Bar */}
-            {task.timeline?.startDate && (
-              <div
-                className="mt-2 w-full h-1 rounded-full overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
-              >
-                <div 
-                  className="h-full transition-all duration-500"
-                  style={{ 
-                    width: `${progress}%`, 
-                    background: STATUS_COLORS[task.status] || 'var(--accent-green)' 
-                  }}
-                />
+            </button>
+          )}
+
+          {task.timeline?.startDate && task.timeline?.endDate && (
+            <div className="mt-3">
+              <div className="mb-1.5 flex items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
+                <span>Timeline</span>
+                <span className="font-mono tabular-nums">{Math.round(progress)}%</span>
               </div>
-            )}
-          </div>
-
-          {!isKanban && (
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={() => setShowRemarks(!showRemarks)}
-                className="p-2 rounded-lg transition-colors"
-                style={{ color: showRemarks ? 'var(--text-primary)' : 'var(--text-muted)' }}
+              <div
+                className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-raised)]"
+                role="progressbar"
+                aria-label={`Timeline progress for ${task.title}`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress)}
               >
-                <MessageSquare size={16} />
-              </button>
-              <button 
-                onClick={() => deleteTask(task._id)}
-                className="p-2 rounded-lg transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-              >
-                <Trash2 size={16} />
-              </button>
+                <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-300" style={{ width: `${progress}%` }} />
+              </div>
             </div>
           )}
         </div>
 
-        {/* Metadata Badges */}
-        <div className={clsx(
-          "flex items-center gap-6",
-          isKanban ? "w-full justify-between mt-2 pt-3 border-t border-dashed" : "ml-auto mr-4"
-        )} style={{ borderColor: isKanban ? 'var(--glass-border)' : undefined }}>
-          {/* Priority */}
-          <div className="flex flex-col items-start min-w-[60px]">
-            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Priority</span>
-            <select
-              value={task.priority}
-              onChange={(e) => updateTask(task._id, { priority: e.target.value })}
-              className="text-[11px] font-bold px-2 py-0.5 rounded-md border cursor-pointer outline-none transition-all"
-              style={{ 
-                backgroundColor: `${PRIORITY_COLORS[task.priority]}10`, 
-                color: PRIORITY_COLORS[task.priority],
-                borderColor: `${PRIORITY_COLORS[task.priority]}30`
-              }}
-            >
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-
-          {/* Budget */}
-          <div className="flex flex-col items-start min-w-[70px]">
-            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Budget</span>
-            <div className="flex items-center gap-1 text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
-              <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{task.budget?.currency}</span>
-              <input 
-                type="number"
-                value={task.budget?.amount || 0}
-                onChange={(e) => updateTask(task._id, { budget: { ...task.budget, amount: Number(e.target.value) } })}
-                className="w-12 bg-transparent border-none outline-none text-left"
-              />
-            </div>
-          </div>
-
-          {/* Due Date */}
-          <div className="flex flex-col items-start min-w-[80px]">
-            <span className="text-[9px] uppercase tracking-tighter mb-1" style={{ color: 'var(--text-muted)' }}>Due Date</span>
-            <input 
-              type="date"
-              value={task.dueDate ? format(new Date(task.dueDate), 'yyyy-MM-dd') : ''}
-              onChange={(e) => updateTask(task._id, { dueDate: e.target.value })}
-              className="text-[11px] font-bold bg-transparent border-none outline-none cursor-pointer"
-              style={{ color: isOverdue ? '#ef4444' : 'var(--text-primary)' }}
-            />
-          </div>
-
-          {isKanban && (
-            <div className="flex items-center gap-1 ml-auto">
-              <button 
-                onClick={() => setShowRemarks(!showRemarks)}
-                className="transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-              >
-                <MessageSquare size={14} />
-              </button>
-              <button 
-                onClick={() => deleteTask(task._id)}
-                className="transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowDetails((visible) => !visible)}
+          className={`finance-icon-btn muted h-9 w-9 shrink-0 ${showDetails ? 'bg-[var(--surface-raised)]' : ''}`}
+          aria-label={`${showDetails ? 'Hide' : 'Show'} details for ${task.title}`}
+          aria-expanded={showDetails}
+        >
+          <MessageSquare size={16} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => deleteTask(task._id)}
+          className="finance-icon-btn red h-9 w-9 shrink-0"
+          aria-label={`Delete ${task.title}`}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+        </button>
       </div>
 
-      {/* Expandable Remarks */}
-      {showRemarks && (
-        <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-          <textarea
-            value={task.remarks}
-            onChange={(e) => updateTask(task._id, { remarks: e.target.value })}
-            placeholder="Add notes..."
-            className="w-full p-3 rounded-lg text-sm outline-none resize-none min-h-[80px]"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--glass-border)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          />
+      <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-3 border-t border-[var(--line)] pt-3">
+        <label className="flex min-w-32 flex-1 flex-col gap-1">
+          <span className="text-xs text-[var(--text-muted)]">Status</span>
+          <span className="flex items-center gap-1.5">
+            {task.status === 'Done' && <CheckCircle2 size={14} className="text-[var(--positive)]" aria-hidden="true" />}
+            <select
+              value={task.status}
+              onChange={(event) => updateTask(task._id, { status: event.target.value })}
+              aria-label={`Status for ${task.title}`}
+              className="min-h-9 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs text-[var(--text-primary)]"
+            >
+              {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+            </select>
+          </span>
+        </label>
+
+        <label className="flex min-w-24 flex-col gap-1">
+          <span className="text-xs text-[var(--text-muted)]">Priority</span>
+          <select
+            value={task.priority}
+            onChange={(event) => updateTask(task._id, { priority: event.target.value })}
+            aria-label={`Priority for ${task.title}`}
+            className="min-h-9 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs font-medium"
+            style={{ color: priorityColor[task.priority] || 'var(--text-secondary)' }}
+          >
+            {PRIORITIES.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+          </select>
+        </label>
+
+        <label className="flex min-w-24 flex-col gap-1">
+          <span className="text-xs text-[var(--text-muted)]">Budget</span>
+          <span className="flex min-h-9 items-center gap-1.5">
+            <span className="text-xs text-[var(--text-muted)]">{task.budget?.currency || '₹'}</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={budgetDraft}
+              onChange={(event) => setBudgetDraft(event.target.value)}
+              onBlur={saveBudget}
+              onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
+              aria-label={`Budget for ${task.title}`}
+              className="finance-input min-h-9 w-24 px-2 text-xs tabular-nums"
+            />
+          </span>
+        </label>
+
+        <label className="flex min-w-36 flex-col gap-1">
+          <span className="text-xs text-[var(--text-muted)]">Due date</span>
+          <span className="flex min-h-9 items-center gap-1.5">
+            <CalendarDays size={14} className={isOverdue ? 'text-[var(--negative)]' : 'text-[var(--text-muted)]'} aria-hidden="true" />
+            <input
+              type="date"
+              value={toDateInput(task.dueDate)}
+              onChange={(event) => updateTask(task._id, { dueDate: toDateValue(event.target.value) })}
+              aria-label={`Due date for ${task.title}`}
+              className="min-h-9 min-w-0 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs text-[var(--text-primary)]"
+            />
+          </span>
+        </label>
+      </div>
+
+      {showDetails && (
+        <div className="mt-3 grid gap-3 border-t border-[var(--line)] pt-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5 text-xs text-[var(--text-secondary)]">
+            Start date
+            <input
+              type="date"
+              value={timelineDraft.startDate}
+              onChange={(event) => saveTimeline('startDate', event.target.value)}
+              className="finance-input"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs text-[var(--text-secondary)]">
+            End date
+            <input
+              type="date"
+              value={timelineDraft.endDate}
+              onChange={(event) => saveTimeline('endDate', event.target.value)}
+              className="finance-input"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs text-[var(--text-secondary)] sm:col-span-2">
+            Notes
+            <textarea
+              value={remarksDraft}
+              onChange={(event) => setRemarksDraft(event.target.value)}
+              onBlur={saveRemarks}
+              rows={3}
+              maxLength={2000}
+              className="finance-input resize-y py-2"
+              placeholder="Add notes for this task"
+            />
+          </label>
         </div>
       )}
-    </div>
+    </article>
   );
 }

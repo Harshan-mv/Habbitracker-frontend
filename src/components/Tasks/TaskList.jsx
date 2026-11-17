@@ -1,55 +1,43 @@
-import React from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import TaskItem from './TaskItem';
 import useTaskStore from '../../store/useTaskStore';
 import Skeleton from '../Skeleton';
 
-export default function TaskList({ tasks }) {
-  const { reorderTasks, isLoadingTasks } = useTaskStore();
+export default function TaskList({ tasks, onReorder, isLoading, hasError, hasFilters }) {
+  const { reorderTasks } = useTaskStore();
 
   const onDragEnd = (result) => {
-    if (!result.destination) return;
-    reorderTasks(result.source.index, result.destination.index);
+    if (!result.destination || result.destination.index === result.source.index) return;
+    reorderTasks(result.source.index, result.destination.index, tasks);
+    onReorder();
   };
 
-  const totalBudget = tasks.reduce((acc, task) => acc + (task.budget?.amount || 0), 0);
-  const currency = tasks[0]?.budget?.currency || '₹';
-
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-1">
-        {isLoadingTasks ? (
-          // Skeleton loading state
-          Array.from({ length: 4 }).map((_, i) => (
-            <div 
-              key={i} 
-              className="mb-3 p-4 rounded-2xl flex items-center gap-4"
-              style={{ 
-                background: 'rgba(255,255,255,0.04)', 
-                border: '1px solid var(--glass-border)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)'
-              }}
-            >
-              <Skeleton variant="circle" width="20px" height="20px" />
-              <div className="flex-1">
-                <Skeleton width="60%" height="16px" className="mb-2" />
-                <Skeleton width="30%" height="12px" />
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto pe-1">
+        {isLoading ? (
+          <div className="space-y-3" aria-label="Loading tasks">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="app-surface flex items-center gap-4 p-4">
+                <Skeleton variant="circle" width="20px" height="20px" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton width="58%" height="16px" />
+                  <Skeleton width="32%" height="12px" />
+                </div>
               </div>
-              <Skeleton width="60px" height="24px" variant="rect" />
-            </div>
-          ))
-        ) : (
+            ))}
+          </div>
+        ) : tasks.length ? (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="tasks-list">
               {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                   {tasks.map((task, index) => (
                     <Draggable key={task._id} draggableId={task._id} index={index}>
-                      {(provided, snapshot) => (
-                        <TaskItem 
-                          task={task} 
-                          provided={provided} 
+                      {(draggable, snapshot) => (
+                        <TaskItem
+                          task={task}
+                          provided={draggable}
                           isDragging={snapshot.isDragging}
                         />
                       )}
@@ -60,36 +48,18 @@ export default function TaskList({ tasks }) {
               )}
             </Droppable>
           </DragDropContext>
-        )}
-
-        {!isLoadingTasks && tasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-muted" style={{ color: 'var(--text-muted)' }}>
-            <p className="text-lg font-medium">No tasks found</p>
-            <p className="text-sm">Add a new task to get started</p>
+        ) : (
+          <div className="flex min-h-48 flex-col items-center justify-center rounded-[var(--radius-card)] border border-dashed border-[var(--line)] px-6 text-center">
+            <p className="text-sm font-medium text-[var(--text-primary)]">
+              {hasError ? 'Tasks could not be loaded' : hasFilters ? 'No tasks match these filters' : 'No tasks yet'}
+            </p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              {hasError ? 'Try again when your connection is available' : hasFilters ? 'Try another search or filter' : 'Add a task to start planning your work'}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Budget Summary Footer */}
-      {tasks.length > 0 && (
-        <div 
-          className="mt-4 p-4 rounded-xl flex items-center justify-between"
-          style={{ 
-            background: 'rgba(255,255,255,0.04)', 
-            border: '1px solid var(--glass-border)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: 'var(--glass-inset-shadow)'
-          }}
-        >
-          <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-            Total Estimated Spend
-          </span>
-          <span className="text-xl font-bold" style={{ color: 'var(--accent-green)', textShadow: '0 0 12px rgba(74,222,128,0.3)' }}>
-            {currency}{totalBudget.toLocaleString()}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

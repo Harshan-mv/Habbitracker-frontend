@@ -1,7 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import useFinanceStore from '../../store/useFinanceStore';
-import { GOAL_ICONS, GOAL_TEMPLATES, GOAL_TYPES } from './goalTemplates';
+import { GOAL_COLOR_PALETTE, GOAL_ICONS, GOAL_TEMPLATES, GOAL_TYPES } from './goalTemplates';
+
+const getGoalColor = (token) => getComputedStyle(document.documentElement).getPropertyValue(token).trim();
 
 const dateValue = (value) => {
   if (!value) return '';
@@ -14,7 +16,7 @@ export default function AddGoalModal({ goal, onClose }) {
   const [name, setName] = useState(goal?.name || '');
   const [type, setType] = useState(goal?.type || 'Travel');
   const [icon, setIcon] = useState(goal?.icon || GOAL_TEMPLATES.Travel.icon);
-  const [color, setColor] = useState(goal?.color || GOAL_TEMPLATES.Travel.color);
+  const [color, setColor] = useState(() => goal?.color || getGoalColor(GOAL_TEMPLATES.Travel.colorToken));
   const [targetAmount, setTargetAmount] = useState(String(goal?.targetAmount || ''));
   const [deadline, setDeadline] = useState(dateValue(goal?.deadline));
   const [monthlyAllocation, setMonthlyAllocation] = useState(String(goal?.monthAllocation || ''));
@@ -37,7 +39,7 @@ export default function AddGoalModal({ goal, onClose }) {
   const handleTypeChange = (nextType) => {
     setType(nextType);
     setIcon(GOAL_TEMPLATES[nextType].icon);
-    setColor(GOAL_TEMPLATES[nextType].color);
+    setColor(getGoalColor(GOAL_TEMPLATES[nextType].colorToken));
   };
 
   const handleDialogKeyDown = (event) => {
@@ -142,6 +144,23 @@ export default function AddGoalModal({ goal, onClose }) {
             Goal color
             <input type="color" value={color} onChange={(event) => setColor(event.target.value)} className="h-10 w-14 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] p-1" aria-label="Goal color" />
           </label>
+          <div className="flex flex-wrap gap-2 sm:col-span-2" role="group" aria-label="Goal color palette">
+            {GOAL_COLOR_PALETTE.map(({ label, colorToken }) => {
+              const value = getGoalColor(colorToken);
+              return (
+                <button
+                  key={colorToken}
+                  type="button"
+                  aria-pressed={color === value}
+                  onClick={() => setColor(value)}
+                  className="inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface)] px-2.5 text-xs text-[var(--text-secondary)] aria-pressed:border-[var(--accent)] aria-pressed:text-[var(--text-primary)]"
+                >
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: `var(${colorToken})` }} aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
           <label className="flex flex-col gap-1.5 text-sm text-[var(--text-secondary)]">
             Target amount
             <input required type="number" min="1" step="1" value={targetAmount} onChange={(event) => setTargetAmount(event.target.value)} className="finance-input w-full" placeholder="50000" />

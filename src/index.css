@@ -60,6 +60,49 @@
   --status-gray: #6f6f75;
   --status-amber: var(--warning);
   --status-red: var(--negative);
+  --status-todo: #c5bbaf;
+  --status-todo-bg: #302e2b;
+  --status-progress: #e2be74;
+  --status-progress-bg: #3a3223;
+  --status-blocked: #d99489;
+  --status-blocked-bg: #3c2b2a;
+  --status-done: #a2c7aa;
+  --status-done-bg: #26352b;
+  --priority-high: var(--status-blocked);
+  --priority-high-bg: var(--status-blocked-bg);
+  --priority-medium: var(--status-progress);
+  --priority-medium-bg: var(--status-progress-bg);
+  --priority-low: #aac1d1;
+  --priority-low-bg: #293640;
+  --category-default: #789b68;
+  --section-income: var(--status-done);
+  --section-income-bg: var(--status-done-bg);
+  --section-expense: var(--status-blocked);
+  --section-expense-bg: var(--status-blocked-bg);
+  --section-available: #a4c4c5;
+  --section-available-bg: #263638;
+  --section-categories: var(--priority-low);
+  --section-categories-bg: var(--priority-low-bg);
+  --section-note: var(--status-progress);
+  --section-note-bg: var(--status-progress-bg);
+  --section-outflow: #c3afd0;
+  --section-outflow-bg: #342c3b;
+  --section-trading: var(--section-available);
+  --section-trading-bg: var(--section-available-bg);
+  --section-goal-emi: var(--section-note);
+  --section-goal-emi-bg: var(--section-note-bg);
+  --section-goal-savings: var(--section-income);
+  --section-goal-savings-bg: var(--section-income-bg);
+  --section-goal-emergency: var(--section-categories);
+  --section-goal-emergency-bg: var(--section-categories-bg);
+  --section-summary-income: var(--section-income);
+  --section-summary-income-bg: var(--section-income-bg);
+  --section-summary-expenses: var(--section-expense);
+  --section-summary-expenses-bg: var(--section-expense-bg);
+  --section-summary-available: var(--section-available);
+  --section-summary-available-bg: var(--section-available-bg);
+  --danger-button-bg: #903f3a;
+  --danger-button-text: #ffffff;
 }
 
 html.light {
@@ -95,6 +138,26 @@ html.light {
   --accent-purple: var(--accent);
   --status-amber: var(--warning);
   --status-red: var(--negative);
+  --status-todo: #665e54;
+  --status-todo-bg: #eeeae4;
+  --status-progress: #795712;
+  --status-progress-bg: #f5ebd4;
+  --status-blocked: #8c4038;
+  --status-blocked-bg: #f3e4e1;
+  --status-done: #2b6247;
+  --status-done-bg: #e2ece5;
+  --priority-high: var(--status-blocked);
+  --priority-high-bg: var(--status-blocked-bg);
+  --priority-medium: var(--status-progress);
+  --priority-medium-bg: var(--status-progress-bg);
+  --priority-low: #4e6679;
+  --priority-low-bg: #e5ebef;
+  --category-default: #789b68;
+  --section-available: #365f65;
+  --section-available-bg: #e1ebeb;
+  --section-outflow: #6d5879;
+  --section-outflow-bg: #eee8f2;
+  --danger-button-bg: #8c4038;
 }
 
 * {
@@ -194,6 +257,21 @@ textarea:focus-visible,
 .finance-card:hover {
   border-color: var(--line) !important;
   box-shadow: var(--shadow-raised);
+}
+
+.finance-section-tint {
+  background: var(--section-tint);
+  border-inline-start: 3px solid var(--section-accent);
+}
+
+.finance-card.finance-section-tint {
+  background: var(--section-tint) !important;
+  border-inline-start: 3px solid var(--section-accent) !important;
+}
+
+.finance-card.finance-section-tint:hover {
+  border-color: var(--line) !important;
+  border-inline-start-color: var(--section-accent) !important;
 }
 
 .finance-input {

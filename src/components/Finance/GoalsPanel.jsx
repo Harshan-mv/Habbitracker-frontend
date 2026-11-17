@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
 import { Target, Shield, CreditCard, Pencil, ArrowRightLeft, RotateCcw, Plus } from 'lucide-react';
+import ConfirmDialog from '../ConfirmDialog';
 import GoalCard from './GoalCard';
 import AddGoalModal from './AddGoalModal';
 
@@ -71,17 +72,23 @@ function EditableValue({ value, onSave, prefix = '₹', color }) {
 }
 
 export default function GoalsPanel() {
-  const { monthData, updateGoals, addToGoal, resetGoal, customGoals, isLoadingGoals, goalsError, fetchGoals } = useFinanceStore();
+  const { monthData, updateGoals, addToGoal, resetGoal, deleteGoal, customGoals, isLoadingGoals, goalsError, fetchGoals } = useFinanceStore();
+  const dialogFallbackRef = useRef(null);
   const [editingGoal, setEditingGoal] = useState(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) await deleteGoal(deleteTarget.goal._id);
+  };
 
   const goals = [
     {
       key: 'emi',
       label: 'EMI tracker',
       icon: CreditCard,
-      color: 'var(--warning)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-emi)',
+      bg: 'var(--section-goal-emi-bg)',
       value: monthData.emiTotalMonths - monthData.emiMonthsLeft,
       max: monthData.emiTotalMonths,
       subtitle: `${monthData.emiMonthsLeft} months remaining`,
@@ -96,8 +103,8 @@ export default function GoalsPanel() {
       label: 'Savings goal',
       description: 'Monthly allocation, carried across months',
       icon: Target,
-      color: 'var(--accent)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-savings)',
+      bg: 'var(--section-goal-savings-bg)',
       value: monthData.savingsAchieved,
       max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevSavingsAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.savingsGoal || 0).toLocaleString('en-IN')})`,
@@ -114,8 +121,8 @@ export default function GoalsPanel() {
       label: 'Emergency fund',
       description: 'Monthly allocation, carried forward',
       icon: Shield,
-      color: 'var(--info)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-emergency)',
+      bg: 'var(--section-goal-emergency-bg)',
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevEmergencyAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.emergencyFund || 0).toLocaleString('en-IN')})`,
@@ -130,7 +137,7 @@ export default function GoalsPanel() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div ref={dialogFallbackRef} tabIndex={-1} className="space-y-4">
       <div className="flex items-center justify-between px-2">
         <h3 className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
           <Target size={14} /> Goal Tracking
@@ -150,7 +157,8 @@ export default function GoalsPanel() {
           return (
             <div 
               key={g.key} 
-              className="finance-card rounded-[var(--radius-card)] p-4 sm:p-5 group relative"
+              className="finance-card finance-section-tint rounded-[var(--radius-card)] p-4 sm:p-5 group relative"
+              style={{ '--section-accent': g.color, '--section-tint': g.bg }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -264,7 +272,12 @@ export default function GoalsPanel() {
           </div>
         )}
         {customGoals.map((goal) => (
-          <GoalCard key={`${goal._id}-${goal.monthAllocation || 0}`} goal={goal} onEdit={() => setEditingGoal(goal)} />
+          <GoalCard
+            key={`${goal._id}-${goal.monthAllocation || 0}`}
+            goal={goal}
+            onEdit={() => setEditingGoal(goal)}
+            onDeleteRequest={(item, triggerElement) => setDeleteTarget({ goal: item, triggerElement })}
+          />
         ))}
         <button
           type="button"
@@ -278,6 +291,16 @@ export default function GoalsPanel() {
         <AddGoalModal
           goal={editingGoal}
           onClose={() => { setShowGoalForm(false); setEditingGoal(null); }}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this goal?"
+          itemName={deleteTarget.goal.name}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </div>

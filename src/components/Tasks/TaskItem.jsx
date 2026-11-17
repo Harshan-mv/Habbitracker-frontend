@@ -6,10 +6,16 @@ import useTaskStore from '../../store/useTaskStore';
 
 const STATUSES = ['Not Started', 'In Progress', 'Done', 'Blocked'];
 const PRIORITIES = ['High', 'Medium', 'Low'];
-const priorityColor = {
-  High: 'var(--negative)',
-  Medium: 'var(--warning)',
-  Low: 'var(--text-secondary)',
+const STATUS_TOKENS = {
+  'Not Started': ['var(--status-todo)', 'var(--status-todo-bg)'],
+  'In Progress': ['var(--status-progress)', 'var(--status-progress-bg)'],
+  Blocked: ['var(--status-blocked)', 'var(--status-blocked-bg)'],
+  Done: ['var(--status-done)', 'var(--status-done-bg)'],
+};
+const PRIORITY_TOKENS = {
+  High: ['var(--priority-high)', 'var(--priority-high-bg)'],
+  Medium: ['var(--priority-medium)', 'var(--priority-medium-bg)'],
+  Low: ['var(--priority-low)', 'var(--priority-low-bg)'],
 };
 
 const toDateInput = (value) => {
@@ -31,8 +37,8 @@ function calculateProgress(timeline) {
   return Math.min(100, Math.max(0, (differenceInCalendarDays(today, start) / totalDays) * 100));
 }
 
-export default function TaskItem({ task, provided, isDragging }) {
-  const { updateTask, deleteTask } = useTaskStore();
+export default function TaskItem({ task, provided, isDragging, viewMode = 'list', onDeleteRequest }) {
+  const { updateTask } = useTaskStore();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(task.title);
   const [budgetDraft, setBudgetDraft] = useState(String(task.budget?.amount ?? 0));
@@ -46,10 +52,15 @@ export default function TaskItem({ task, provided, isDragging }) {
   const progress = useMemo(() => calculateProgress(task.timeline), [task.timeline]);
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dueDate && isPast(dueDate) && !isToday(dueDate) && task.status !== 'Done';
+  const isDueToday = dueDate && isToday(dueDate) && task.status !== 'Done';
+  const [statusColor, statusBackground] = STATUS_TOKENS[task.status] || ['var(--text-secondary)', 'var(--surface-raised)'];
+  const [priorityColor, priorityBackground] = PRIORITY_TOKENS[task.priority] || ['var(--text-secondary)', 'var(--surface-raised)'];
+  const itemAccent = viewMode === 'board' ? priorityColor : statusColor;
   const cardStyle = {
     ...provided.draggableProps.style,
     background: 'var(--surface)',
-    borderColor: isOverdue ? 'color-mix(in srgb, var(--negative) 60%, var(--line))' : 'var(--line)',
+    border: '1px solid var(--line)',
+    borderInlineStart: `3px solid ${itemAccent}`,
     opacity: task.status === 'Done' ? 0.88 : 1,
   };
 
@@ -169,7 +180,7 @@ export default function TaskItem({ task, provided, isDragging }) {
         </button>
         <button
           type="button"
-          onClick={() => deleteTask(task._id)}
+          onClick={(event) => onDeleteRequest(task, event.currentTarget)}
           className="finance-icon-btn red h-9 w-9 shrink-0"
           aria-label={`Delete ${task.title}`}
         >
@@ -186,7 +197,8 @@ export default function TaskItem({ task, provided, isDragging }) {
               value={task.status}
               onChange={(event) => updateTask(task._id, { status: event.target.value })}
               aria-label={`Status for ${task.title}`}
-              className="min-h-9 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs text-[var(--text-primary)]"
+              className="min-h-9 min-w-0 flex-1 rounded-[var(--radius-control)] border px-2 text-xs font-medium"
+              style={{ color: statusColor, backgroundColor: statusBackground, borderColor: statusColor }}
             >
               {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
             </select>
@@ -199,8 +211,8 @@ export default function TaskItem({ task, provided, isDragging }) {
             value={task.priority}
             onChange={(event) => updateTask(task._id, { priority: event.target.value })}
             aria-label={`Priority for ${task.title}`}
-            className="min-h-9 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs font-medium"
-            style={{ color: priorityColor[task.priority] || 'var(--text-secondary)' }}
+            className="min-h-9 rounded-[var(--radius-control)] border px-2 text-xs font-medium"
+            style={{ color: priorityColor, backgroundColor: priorityBackground, borderColor: priorityColor }}
           >
             {PRIORITIES.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
           </select>
@@ -227,14 +239,17 @@ export default function TaskItem({ task, provided, isDragging }) {
         <label className="flex min-w-36 flex-col gap-1">
           <span className="text-xs text-[var(--text-muted)]">Due date</span>
           <span className="flex min-h-9 items-center gap-1.5">
-            <CalendarDays size={14} className={isOverdue ? 'text-[var(--negative)]' : 'text-[var(--text-muted)]'} aria-hidden="true" />
+            <CalendarDays size={14} className={isOverdue ? 'text-[var(--negative)]' : isDueToday ? 'text-[var(--warning)]' : 'text-[var(--text-muted)]'} aria-hidden="true" />
             <input
               type="date"
               value={toDateInput(task.dueDate)}
               onChange={(event) => updateTask(task._id, { dueDate: toDateValue(event.target.value) })}
               aria-label={`Due date for ${task.title}`}
-              className="min-h-9 min-w-0 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs text-[var(--text-primary)]"
+              className="min-h-9 min-w-0 rounded-[var(--radius-control)] border border-[var(--line)] bg-[var(--surface-raised)] px-2 text-xs"
+              style={{ color: isOverdue ? 'var(--negative)' : isDueToday ? 'var(--warning)' : 'var(--text-primary)' }}
             />
+            {isOverdue && <span className="text-xs font-medium text-[var(--negative)]">Overdue</span>}
+            {isDueToday && <span className="text-xs font-medium text-[var(--warning)]">Due today</span>}
           </span>
         </label>
       </div>

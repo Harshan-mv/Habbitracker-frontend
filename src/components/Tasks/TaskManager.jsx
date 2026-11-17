@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import useTaskStore from '../../store/useTaskStore';
+import ConfirmDialog from '../ConfirmDialog';
 import TaskList from './TaskList';
 import TaskKanban from './TaskKanban';
 import TaskFilters from './TaskFilters';
 
 export default function TaskManager() {
-  const { tasks, fetchTasks, addTask, taskError, taskLoadError, isLoadingTasks } = useTaskStore();
+  const { tasks, fetchTasks, addTask, deleteTask, taskError, taskLoadError, isLoadingTasks } = useTaskStore();
+  const dialogFallbackRef = useRef(null);
   const [view, setView] = useState('list');
   const [sortMode, setSortMode] = useState('date');
   const [search, setSearch] = useState('');
@@ -17,6 +19,7 @@ export default function TaskManager() {
   const [budget, setBudget] = useState('');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     fetchTasks();
@@ -68,8 +71,16 @@ export default function TaskManager() {
     }
   };
 
+  const handleDeleteRequest = (task, triggerElement) => {
+    setDeleteTarget({ task, triggerElement });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) await deleteTask(deleteTarget.task._id);
+  };
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div ref={dialogFallbackRef} tabIndex={-1} className="flex min-h-0 flex-1 flex-col gap-4">
       <TaskFilters
         filters={filters}
         setFilters={setFilters}
@@ -130,6 +141,7 @@ export default function TaskManager() {
         {view === 'list' ? (
           <TaskList
             tasks={filteredTasks}
+            onDeleteRequest={handleDeleteRequest}
             sortMode={sortMode}
             onReorder={() => setSortMode('manual')}
             isLoading={isLoadingTasks}
@@ -137,7 +149,7 @@ export default function TaskManager() {
             hasFilters={Boolean(search || filters.status !== 'All' || filters.priority !== 'All')}
           />
         ) : (
-          <TaskKanban tasks={filteredTasks} isLoading={isLoadingTasks} />
+          <TaskKanban tasks={filteredTasks} isLoading={isLoadingTasks} onDeleteRequest={handleDeleteRequest} />
         )}
       </div>
 
@@ -159,6 +171,16 @@ export default function TaskManager() {
           <Plus size={17} aria-hidden="true" />
           Add task
         </button>
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this task?"
+          itemName={deleteTarget.task.title}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );

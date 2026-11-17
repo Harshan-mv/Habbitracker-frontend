@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import useFinanceStore from '../../store/useFinanceStore';
+import ConfirmDialog from '../ConfirmDialog';
 
 export default function CategoryManager() {
   const {
@@ -10,9 +11,11 @@ export default function CategoryManager() {
     addCategory,
     deleteCategory,
   } = useFinanceStore();
+  const dialogFallbackRef = useRef(null);
   const [kind, setKind] = useState('expense');
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#789b68');
+  const [color, setColor] = useState(() => getComputedStyle(document.documentElement).getPropertyValue('--category-default').trim());
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
   const options = getCategoryOptions(kind);
@@ -35,10 +38,20 @@ export default function CategoryManager() {
     }
   };
 
+  const handleDelete = async () => {
+    if (deleteTarget) await deleteCategory(deleteTarget.id);
+  };
+
   return (
-    <section className="app-surface p-4 sm:p-5" aria-labelledby="category-manager-heading">
+    <section
+      ref={dialogFallbackRef}
+      tabIndex={-1}
+      className="app-surface finance-section-tint p-4 sm:p-5"
+      style={{ '--section-accent': 'var(--section-categories)', '--section-tint': 'var(--section-categories-bg)' }}
+      aria-labelledby="category-manager-heading"
+    >
       <div className="mb-4">
-        <h3 id="category-manager-heading" className="text-sm font-medium text-[var(--text-primary)]">Income and expense categories</h3>
+        <h3 id="category-manager-heading" className="text-sm font-medium" style={{ color: 'var(--section-categories)' }}>Income and expense categories</h3>
         <p className="mt-1 text-xs text-[var(--text-muted)]">Add labels for your source types and spending</p>
       </div>
 
@@ -69,7 +82,16 @@ export default function CategoryManager() {
                 {!category.isCustom && <span className="text-xs text-[var(--text-muted)]">Built in</span>}
               </span>
               {category.isCustom && (
-                <button type="button" className="finance-icon-btn red h-8 w-8" aria-label={`Delete ${category.name} category`} onClick={() => deleteCategory(category._id)}>
+                <button
+                  type="button"
+                  className="finance-icon-btn red h-8 w-8"
+                  aria-label={`Delete ${category.name} category`}
+                  onClick={(event) => setDeleteTarget({
+                    id: category._id,
+                    itemName: category.name,
+                    triggerElement: event.currentTarget,
+                  })}
+                >
                   <Trash2 size={14} aria-hidden="true" />
                 </button>
               )}
@@ -92,6 +114,16 @@ export default function CategoryManager() {
         </button>
         {formError && <p className="w-full text-xs text-[var(--negative)]" role="alert">{formError}</p>}
       </form>
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this category?"
+          itemName={deleteTarget.itemName}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
     </section>
   );
 }

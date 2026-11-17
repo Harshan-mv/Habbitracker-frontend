@@ -5,8 +5,8 @@ import { GOAL_ICONS, GOAL_TEMPLATES } from './goalTemplates';
 
 const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
-export default function GoalCard({ goal, onEdit }) {
-  const { updateGoal, deleteGoal, setGoalAllocation } = useFinanceStore();
+export default function GoalCard({ goal, onEdit, onDeleteRequest }) {
+  const { updateGoal, setGoalAllocation } = useFinanceStore();
   const [allocation, setAllocation] = useState(String(goal.monthAllocation || 0));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -45,15 +45,6 @@ export default function GoalCard({ goal, onEdit }) {
     saveAllocation(next);
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm(`Delete "${goal.name}" and its contribution history? This cannot be undone.`)) return;
-    try {
-      await deleteGoal(goal._id);
-    } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Could not delete this goal.');
-    }
-  };
-
   const handleStatus = async (status) => {
     try {
       await updateGoal(goal._id, { status });
@@ -67,10 +58,19 @@ export default function GoalCard({ goal, onEdit }) {
     : null;
 
   return (
-    <article className="finance-card min-w-0 rounded-[var(--radius-card)] p-4 sm:p-5">
+    <article
+      className="finance-card finance-section-tint min-w-0 rounded-[var(--radius-card)] p-4 sm:p-5"
+      style={{
+        '--section-accent': goal.color,
+        '--section-tint': `color-mix(in srgb, ${goal.color} 12%, var(--surface))`,
+      }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--surface-raised)]" style={{ color: goal.color }}>
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)]"
+            style={{ color: goal.color, backgroundColor: `color-mix(in srgb, ${goal.color} 14%, var(--surface))` }}
+          >
             <Icon size={19} strokeWidth={1.7} aria-hidden="true" />
           </span>
           <div className="min-w-0">
@@ -99,7 +99,7 @@ export default function GoalCard({ goal, onEdit }) {
               <Archive size={15} aria-hidden="true" />
             </button>
           )}
-          <button type="button" className="finance-icon-btn red" onClick={handleDelete} aria-label={`Delete ${goal.name}`}>
+          <button type="button" className="finance-icon-btn red" onClick={(event) => onDeleteRequest(goal, event.currentTarget)} aria-label={`Delete ${goal.name}`}>
             <Trash2 size={15} aria-hidden="true" />
           </button>
         </div>

@@ -3,7 +3,7 @@ import TaskItem from './TaskItem';
 import useTaskStore from '../../store/useTaskStore';
 import Skeleton from '../Skeleton';
 
-export default function TaskList({ tasks, onReorder, isLoading, hasError, hasFilters }) {
+export default function TaskList({ tasks, onReorder, onDeleteRequest, isLoading, hasError, hasFilters }) {
   const { reorderTasks } = useTaskStore();
 
   const onDragEnd = (result) => {
@@ -39,6 +39,7 @@ export default function TaskList({ tasks, onReorder, isLoading, hasError, hasFil
                           task={task}
                           provided={draggable}
                           isDragging={snapshot.isDragging}
+                          onDeleteRequest={onDeleteRequest}
                         />
                       )}
                     </Draggable>

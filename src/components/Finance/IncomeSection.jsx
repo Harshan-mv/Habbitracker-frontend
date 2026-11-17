@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
 import { Plus, Trash2, Pencil, Check, X, IndianRupee } from 'lucide-react';
+import ConfirmDialog from '../ConfirmDialog';
+import deleteFinanceItemAndWaitForSave from './deleteFinanceItemAndWaitForSave';
 
 export default function IncomeSection() {
   const { monthData, addIncome, updateIncome, deleteIncome, getCategoryOptions } = useFinanceStore();
+  const dialogFallbackRef = useRef(null);
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [sourceType, setSourceType] = useState('Salary');
@@ -46,17 +50,26 @@ export default function IncomeSection() {
     setSourceType('Salary');
   };
 
+  const handleDelete = async () => {
+    if (deleteTarget) {
+      await deleteFinanceItemAndWaitForSave(() => deleteIncome(deleteTarget.id));
+    }
+  };
+
   return (
     <div
-      className="finance-card rounded-[var(--radius-card)] p-4"
+      ref={dialogFallbackRef}
+      tabIndex={-1}
+      className="finance-card finance-section-tint rounded-[var(--radius-card)] p-4"
+      style={{ '--section-accent': 'var(--section-income)', '--section-tint': 'var(--section-income-bg)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <IndianRupee size={17} style={{ color: 'var(--text-secondary)' }} />
-          <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Income sources</h3>
+          <IndianRupee size={17} style={{ color: 'var(--section-income)' }} />
+          <h3 className="text-sm font-medium" style={{ color: 'var(--section-income)' }}>Income sources</h3>
         </div>
-        <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--text-primary)' }}>
+        <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--section-income)' }}>
           ₹{totalIncome.toLocaleString('en-IN')}
         </span>
       </div>
@@ -131,8 +144,13 @@ export default function IncomeSection() {
                   <Pencil size={12} />
                 </button>
                 <button
+                  type="button"
                   className="finance-icon-btn red"
-                  onClick={() => deleteIncome(inc._id || inc.id)}
+                  onClick={(event) => setDeleteTarget({
+                    id: inc._id || inc.id,
+                    itemName: `${inc.name} – ₹${inc.amount.toLocaleString('en-IN')}`,
+                    triggerElement: event.currentTarget,
+                  })}
                   aria-label={`Delete income source ${inc.name}`}
                 >
                   <Trash2 size={12} />
@@ -189,6 +207,16 @@ export default function IncomeSection() {
         >
           <Plus size={15} /> Add income
         </button>
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this income source?"
+          itemName={deleteTarget.itemName}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
       )}
     </div>
   );

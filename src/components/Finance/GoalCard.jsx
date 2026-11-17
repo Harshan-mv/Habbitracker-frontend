@@ -5,8 +5,8 @@ import { GOAL_ICONS, GOAL_TEMPLATES } from './goalTemplates';
 
 const money = (amount) => `₹${Number(amount || 0).toLocaleString('en-IN')}`;
 
-export default function GoalCard({ goal, onEdit }) {
-  const { updateGoal, deleteGoal, setGoalAllocation } = useFinanceStore();
+export default function GoalCard({ goal, onEdit, onDeleteRequest }) {
+  const { updateGoal, setGoalAllocation } = useFinanceStore();
   const [allocation, setAllocation] = useState(String(goal.monthAllocation || 0));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -43,15 +43,6 @@ export default function GoalCard({ goal, onEdit }) {
     const next = Math.max(0, allocationAmount + difference);
     setAllocation(String(next));
     saveAllocation(next);
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm(`Delete "${goal.name}" and its contribution history? This cannot be undone.`)) return;
-    try {
-      await deleteGoal(goal._id);
-    } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Could not delete this goal.');
-    }
   };
 
   const handleStatus = async (status) => {
@@ -99,7 +90,7 @@ export default function GoalCard({ goal, onEdit }) {
               <Archive size={15} aria-hidden="true" />
             </button>
           )}
-          <button type="button" className="finance-icon-btn red" onClick={handleDelete} aria-label={`Delete ${goal.name}`}>
+          <button type="button" className="finance-icon-btn red" onClick={(event) => onDeleteRequest(goal, event.currentTarget)} aria-label={`Delete ${goal.name}`}>
             <Trash2 size={15} aria-hidden="true" />
           </button>
         </div>

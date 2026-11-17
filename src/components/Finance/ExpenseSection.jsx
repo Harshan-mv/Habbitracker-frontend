@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import useFinanceStore from '../../store/useFinanceStore';
 import { Plus, Trash2, Pencil, Check, X, ShoppingCart } from 'lucide-react';
+import ConfirmDialog from '../ConfirmDialog';
+import deleteFinanceItemAndWaitForSave from './deleteFinanceItemAndWaitForSave';
 
 export default function ExpenseSection() {
   const { monthData, addExpense, updateExpense, deleteExpense, getCategoryOptions } = useFinanceStore();
+  const dialogFallbackRef = useRef(null);
   const [adding, setAdding] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Other');
@@ -46,8 +50,16 @@ export default function ExpenseSection() {
     setCategory('Other');
   };
 
+  const handleDelete = async () => {
+    if (deleteTarget) {
+      await deleteFinanceItemAndWaitForSave(() => deleteExpense(deleteTarget.id));
+    }
+  };
+
   return (
     <div
+      ref={dialogFallbackRef}
+      tabIndex={-1}
       className="finance-card rounded-[var(--radius-card)] p-4"
     >
       {/* Header */}
@@ -146,8 +158,13 @@ export default function ExpenseSection() {
                   <Pencil size={12} />
                 </button>
                 <button
+                  type="button"
                   className="finance-icon-btn red"
-                  onClick={() => deleteExpense(exp._id || exp.id)}
+                  onClick={(event) => setDeleteTarget({
+                    id: exp._id || exp.id,
+                    itemName: `${exp.name} – ₹${exp.amount.toLocaleString('en-IN')}`,
+                    triggerElement: event.currentTarget,
+                  })}
                   aria-label={`Delete expense ${exp.name}`}
                 >
                   <Trash2 size={12} />
@@ -220,6 +237,16 @@ export default function ExpenseSection() {
         >
           <Plus size={15} /> Add expense
         </button>
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this expense?"
+          itemName={deleteTarget.itemName}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
       )}
     </div>
   );

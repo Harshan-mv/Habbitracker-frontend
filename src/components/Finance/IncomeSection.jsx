@@ -60,15 +60,16 @@ export default function IncomeSection() {
     <div
       ref={dialogFallbackRef}
       tabIndex={-1}
-      className="finance-card rounded-[var(--radius-card)] p-4"
+      className="finance-card finance-section-tint rounded-[var(--radius-card)] p-4"
+      style={{ '--section-accent': 'var(--section-income)', '--section-tint': 'var(--section-income-bg)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <IndianRupee size={17} style={{ color: 'var(--text-secondary)' }} />
-          <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Income sources</h3>
+          <IndianRupee size={17} style={{ color: 'var(--section-income)' }} />
+          <h3 className="text-sm font-medium" style={{ color: 'var(--section-income)' }}>Income sources</h3>
         </div>
-        <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--text-primary)' }}>
+        <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--section-income)' }}>
           ₹{totalIncome.toLocaleString('en-IN')}
         </span>
       </div>

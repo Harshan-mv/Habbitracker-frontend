@@ -14,7 +14,7 @@ export default function CategoryManager() {
   const dialogFallbackRef = useRef(null);
   const [kind, setKind] = useState('expense');
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#789b68');
+  const [color, setColor] = useState(() => getComputedStyle(document.documentElement).getPropertyValue('--category-default').trim());
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
@@ -43,9 +43,15 @@ export default function CategoryManager() {
   };
 
   return (
-    <section ref={dialogFallbackRef} tabIndex={-1} className="app-surface p-4 sm:p-5" aria-labelledby="category-manager-heading">
+    <section
+      ref={dialogFallbackRef}
+      tabIndex={-1}
+      className="app-surface finance-section-tint p-4 sm:p-5"
+      style={{ '--section-accent': 'var(--section-categories)', '--section-tint': 'var(--section-categories-bg)' }}
+      aria-labelledby="category-manager-heading"
+    >
       <div className="mb-4">
-        <h3 id="category-manager-heading" className="text-sm font-medium text-[var(--text-primary)]">Income and expense categories</h3>
+        <h3 id="category-manager-heading" className="text-sm font-medium" style={{ color: 'var(--section-categories)' }}>Income and expense categories</h3>
         <p className="mt-1 text-xs text-[var(--text-muted)]">Add labels for your source types and spending</p>
       </div>
 

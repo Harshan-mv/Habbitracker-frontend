@@ -4,9 +4,13 @@ export default function FinanceNoteSection() {
   const { monthData, updateNote, isSaving, financeError } = useFinanceStore();
 
   return (
-    <section className="app-surface p-4 sm:p-5" aria-labelledby="finance-note-heading">
+    <section
+      className="app-surface finance-section-tint p-4 sm:p-5"
+      style={{ '--section-accent': 'var(--section-note)', '--section-tint': 'var(--section-note-bg)' }}
+      aria-labelledby="finance-note-heading"
+    >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 id="finance-note-heading" className="text-sm font-medium text-[var(--text-primary)]">Monthly note</h3>
+        <h3 id="finance-note-heading" className="text-sm font-medium" style={{ color: 'var(--section-note)' }}>Monthly note</h3>
         <span className="text-xs text-[var(--text-muted)]" aria-live="polite">
           {isSaving ? 'Saving' : financeError ? 'Not saved' : 'Auto-saves'}
         </span>

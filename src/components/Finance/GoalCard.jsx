@@ -58,10 +58,19 @@ export default function GoalCard({ goal, onEdit, onDeleteRequest }) {
     : null;
 
   return (
-    <article className="finance-card min-w-0 rounded-[var(--radius-card)] p-4 sm:p-5">
+    <article
+      className="finance-card finance-section-tint min-w-0 rounded-[var(--radius-card)] p-4 sm:p-5"
+      style={{
+        '--section-accent': goal.color,
+        '--section-tint': `color-mix(in srgb, ${goal.color} 12%, var(--surface))`,
+      }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-[var(--surface-raised)]" style={{ color: goal.color }}>
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-control)]"
+            style={{ color: goal.color, backgroundColor: `color-mix(in srgb, ${goal.color} 14%, var(--surface))` }}
+          >
             <Icon size={19} strokeWidth={1.7} aria-hidden="true" />
           </span>
           <div className="min-w-0">

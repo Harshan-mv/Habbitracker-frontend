@@ -22,7 +22,7 @@ function OutflowBreakdown({ breakdown }) {
       <div className="flex items-end justify-between gap-4 border-b border-[var(--line)] pb-4">
         <div>
           <p className="text-sm text-[var(--text-secondary)]">Total outflow</p>
-          <p className="mt-1 text-2xl font-medium tabular-nums text-[var(--text-primary)]">{formatAmount(total)}</p>
+          <p className="mt-1 text-2xl font-medium tabular-nums" style={{ color: 'var(--section-outflow)' }}>{formatAmount(total)}</p>
         </div>
         <span className="text-xs text-[var(--text-muted)]">{entries.length} categories</span>
       </div>
@@ -63,9 +63,13 @@ export default function ChartsPanel() {
   const breakdown = getCategoryBreakdown();
 
   return (
-    <section className="app-surface p-4 sm:p-5" aria-labelledby="outflow-heading">
+    <section
+      className="app-surface finance-section-tint p-4 sm:p-5"
+      style={{ '--section-accent': 'var(--section-outflow)', '--section-tint': 'var(--section-outflow-bg)' }}
+      aria-labelledby="outflow-heading"
+    >
       <div className="mb-4">
-        <h3 id="outflow-heading" className="text-sm font-medium text-[var(--text-primary)]">Outflow breakdown</h3>
+        <h3 id="outflow-heading" className="text-sm font-medium" style={{ color: 'var(--section-outflow)' }}>Outflow breakdown</h3>
         <p className="mt-1 text-xs text-[var(--text-muted)]">Expenses and planned allocations by category</p>
       </div>
       <OutflowBreakdown breakdown={breakdown} />

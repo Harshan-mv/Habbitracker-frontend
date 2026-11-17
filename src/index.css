@@ -74,6 +74,7 @@
   --priority-medium-bg: var(--status-progress-bg);
   --priority-low: #aac1d1;
   --priority-low-bg: #293640;
+  --category-default: #789b68;
   --section-income: var(--status-done);
   --section-income-bg: var(--status-done-bg);
   --section-expense: var(--status-blocked);
@@ -151,6 +152,7 @@ html.light {
   --priority-medium-bg: var(--status-progress-bg);
   --priority-low: #4e6679;
   --priority-low-bg: #e5ebef;
+  --category-default: #789b68;
   --section-available: #365f65;
   --section-available-bg: #e1ebeb;
   --section-outflow: #6d5879;
@@ -255,6 +257,21 @@ textarea:focus-visible,
 .finance-card:hover {
   border-color: var(--line) !important;
   box-shadow: var(--shadow-raised);
+}
+
+.finance-section-tint {
+  background: var(--section-tint);
+  border-inline-start: 3px solid var(--section-accent);
+}
+
+.finance-card.finance-section-tint {
+  background: var(--section-tint) !important;
+  border-inline-start: 3px solid var(--section-accent) !important;
+}
+
+.finance-card.finance-section-tint:hover {
+  border-color: var(--line) !important;
+  border-inline-start-color: var(--section-accent) !important;
 }
 
 .finance-input {

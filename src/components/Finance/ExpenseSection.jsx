@@ -60,17 +60,18 @@ export default function ExpenseSection() {
     <div
       ref={dialogFallbackRef}
       tabIndex={-1}
-      className="finance-card rounded-[var(--radius-card)] p-4"
+      className="finance-card finance-section-tint rounded-[var(--radius-card)] p-4"
+      style={{ '--section-accent': 'var(--section-expense)', '--section-tint': 'var(--section-expense-bg)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <ShoppingCart size={17} style={{ color: 'var(--text-secondary)' }} />
-          <h3 className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Expenses</h3>
+          <ShoppingCart size={17} style={{ color: 'var(--section-expense)' }} />
+          <h3 className="text-sm font-medium" style={{ color: 'var(--section-expense)' }}>Expenses</h3>
         </div>
         <span
           className="text-sm font-medium tabular-nums"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: 'var(--section-expense)' }}
         >
           ₹{totalExpenses.toLocaleString('en-IN')}
         </span>

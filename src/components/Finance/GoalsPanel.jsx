@@ -87,8 +87,8 @@ export default function GoalsPanel() {
       key: 'emi',
       label: 'EMI tracker',
       icon: CreditCard,
-      color: 'var(--warning)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-emi)',
+      bg: 'var(--section-goal-emi-bg)',
       value: monthData.emiTotalMonths - monthData.emiMonthsLeft,
       max: monthData.emiTotalMonths,
       subtitle: `${monthData.emiMonthsLeft} months remaining`,
@@ -103,8 +103,8 @@ export default function GoalsPanel() {
       label: 'Savings goal',
       description: 'Monthly allocation, carried across months',
       icon: Target,
-      color: 'var(--accent)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-savings)',
+      bg: 'var(--section-goal-savings-bg)',
       value: monthData.savingsAchieved,
       max: monthData.savingsTarget > 0 ? monthData.savingsTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.savingsAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevSavingsAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.savingsGoal || 0).toLocaleString('en-IN')})`,
@@ -121,8 +121,8 @@ export default function GoalsPanel() {
       label: 'Emergency fund',
       description: 'Monthly allocation, carried forward',
       icon: Shield,
-      color: 'var(--info)',
-      bg: 'var(--surface-raised)',
+      color: 'var(--section-goal-emergency)',
+      bg: 'var(--section-goal-emergency-bg)',
       value: monthData.emergencyAchieved,
       max: monthData.emergencyTarget > 0 ? monthData.emergencyTarget : undefined,
       subtitle: `Total saved: ₹${(monthData.emergencyAchieved || 0).toLocaleString('en-IN')} (Previous: ₹${(monthData.prevEmergencyAchieved || 0).toLocaleString('en-IN')} + This Month: ₹${(monthData.emergencyFund || 0).toLocaleString('en-IN')})`,
@@ -157,7 +157,8 @@ export default function GoalsPanel() {
           return (
             <div 
               key={g.key} 
-              className="finance-card rounded-[var(--radius-card)] p-4 sm:p-5 group relative"
+              className="finance-card finance-section-tint rounded-[var(--radius-card)] p-4 sm:p-5 group relative"
+              style={{ '--section-accent': g.color, '--section-tint': g.bg }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">

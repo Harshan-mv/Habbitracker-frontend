@@ -8,9 +8,13 @@ export default function TradingPanel() {
   const netPnL = monthData.realizedPnL - monthData.charges;
 
   return (
-    <section className="app-surface p-4 sm:p-5" aria-labelledby="trading-heading">
+    <section
+      className="app-surface finance-section-tint p-4 sm:p-5"
+      style={{ '--section-accent': 'var(--section-trading)', '--section-tint': 'var(--section-trading-bg)' }}
+      aria-labelledby="trading-heading"
+    >
       <div className="mb-4">
-        <h3 id="trading-heading" className="text-sm font-medium text-[var(--text-primary)]">Trading summary</h3>
+        <h3 id="trading-heading" className="text-sm font-medium" style={{ color: 'var(--section-trading)' }}>Trading summary</h3>
         <p className="mt-1 text-xs text-[var(--text-muted)]">Based on investment expenses and recorded results</p>
       </div>
 

@@ -5,10 +5,10 @@ import useTaskStore from '../../store/useTaskStore';
 import Skeleton from '../Skeleton';
 
 const COLUMNS = [
-  { id: 'Not Started', label: 'To do' },
-  { id: 'In Progress', label: 'In progress' },
-  { id: 'Blocked', label: 'Blocked' },
-  { id: 'Done', label: 'Done' },
+  { id: 'Not Started', label: 'To do', color: 'var(--status-todo)', background: 'var(--status-todo-bg)' },
+  { id: 'In Progress', label: 'In progress', color: 'var(--status-progress)', background: 'var(--status-progress-bg)' },
+  { id: 'Blocked', label: 'Blocked', color: 'var(--status-blocked)', background: 'var(--status-blocked-bg)' },
+  { id: 'Done', label: 'Done', color: 'var(--status-done)', background: 'var(--status-done-bg)' },
 ];
 
 export default function TaskKanban({ tasks, isLoading }) {
@@ -33,9 +33,19 @@ export default function TaskKanban({ tasks, isLoading }) {
           const columnTasks = tasks.filter((task) => task.status === column.id);
           return (
             <section key={column.id} aria-label={`${column.label} tasks`} className="flex min-h-0 w-[280px] shrink-0 flex-col md:w-[320px]">
-              <div className="mb-2 flex min-h-10 items-center justify-between border-b border-[var(--line)] px-2">
-                <h3 className="text-sm font-medium text-[var(--text-primary)]">{column.label}</h3>
-                {!isLoading && <span className="text-xs tabular-nums text-[var(--text-muted)]">{columnTasks.length}</span>}
+              <div
+                className="mb-2 flex min-h-11 items-center justify-between rounded-[var(--radius-control)] border border-[var(--line)] px-3"
+                style={{ borderBlockStart: `3px solid ${column.color}`, backgroundColor: column.background }}
+              >
+                <h3 className="flex items-center gap-2 text-sm font-medium" style={{ color: column.color }}>
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color }} aria-hidden="true" />
+                  {column.label}
+                </h3>
+                {!isLoading && (
+                  <span className="rounded-full px-2 py-0.5 text-xs font-medium tabular-nums" style={{ color: column.color, backgroundColor: 'var(--surface)' }}>
+                    {columnTasks.length}
+                  </span>
+                )}
               </div>
 
               {isLoading ? (
@@ -52,10 +62,13 @@ export default function TaskKanban({ tasks, isLoading }) {
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className={clsx(
-                        'min-h-28 flex-1 rounded-[var(--radius-control)] p-1 transition-colors',
-                        snapshot.isDraggingOver && 'bg-[var(--surface-raised)]'
-                      )}
+                      className={clsx('min-h-28 flex-1 rounded-[var(--radius-control)] border p-1 transition-colors', snapshot.isDraggingOver && 'border-2')}
+                      style={{
+                        backgroundColor: snapshot.isDraggingOver
+                          ? `color-mix(in srgb, ${column.color} 16%, ${column.background})`
+                          : column.background,
+                        borderColor: snapshot.isDraggingOver ? column.color : 'transparent',
+                      }}
                     >
                       {columnTasks.map((task, index) => (
                         <Draggable key={task._id} draggableId={task._id} index={index}>
@@ -65,6 +78,7 @@ export default function TaskKanban({ tasks, isLoading }) {
                                 task={task}
                                 provided={draggable}
                                 isDragging={dragSnapshot.isDragging}
+                                viewMode="board"
                               />
                             </div>
                           )}

@@ -1,28 +1,30 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import useStore from '../store/useStore';
+import ConfirmDialog from './ConfirmDialog';
 import AddHabitModal from './AddHabitModal';
 import Skeleton from './Skeleton';
 
 export default function HabitList() {
   const { habits, deleteHabit, isLoadingHabits, habitsError } = useStore();
+  const dialogFallbackRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState('');
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     setDeleteError('');
     try {
-      await deleteHabit(id);
-      setConfirmDelete(null);
+      await deleteHabit(deleteTarget.habit._id);
     } catch (error) {
       setDeleteError(error.response?.data?.message || 'Could not remove this habit. Try again.');
+      throw error;
     }
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ minWidth: '180px' }}>
+    <div ref={dialogFallbackRef} tabIndex={-1} className="flex flex-col h-full" style={{ minWidth: '180px' }}>
       {/* Header row - aligns with heatmap date header */}
       <div className="pb-3 flex items-end" style={{ height: '58px' }}>
         <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
@@ -73,7 +75,7 @@ export default function HabitList() {
                   <Pencil size={15} />
                 </button>
                 <button
-                  onClick={() => setConfirmDelete(habit._id)}
+                  onClick={(event) => setDeleteTarget({ habit, triggerElement: event.currentTarget })}
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:text-[var(--negative)]"
                   title="Delete habit"
                   aria-label={`Delete ${habit.name}`}
@@ -82,25 +84,6 @@ export default function HabitList() {
                 </button>
               </div>
 
-              {/* Confirm delete */}
-              {confirmDelete === habit._id && (
-                <div className="flex gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => handleDelete(habit._id)}
-                    className="px-2 py-1 rounded text-xs font-medium"
-                    style={{ background: 'var(--negative)', color: '#fff' }}
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(null)}
-                    className="px-2 py-0.5 rounded text-xs"
-                    style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
             </div>
           ))
         )}
@@ -128,6 +111,16 @@ export default function HabitList() {
         <AddHabitModal
           existingHabit={editingHabit}
           onClose={() => { setShowModal(false); setEditingHabit(null); }}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this habit?"
+          itemName={deleteTarget.habit.name}
+          triggerElement={deleteTarget.triggerElement}
+          fallbackFocusRef={dialogFallbackRef}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
         />
       )}
     </div>

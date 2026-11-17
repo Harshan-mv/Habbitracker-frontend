@@ -37,8 +37,8 @@ function calculateProgress(timeline) {
   return Math.min(100, Math.max(0, (differenceInCalendarDays(today, start) / totalDays) * 100));
 }
 
-export default function TaskItem({ task, provided, isDragging, viewMode = 'list' }) {
-  const { updateTask, deleteTask } = useTaskStore();
+export default function TaskItem({ task, provided, isDragging, viewMode = 'list', onDeleteRequest }) {
+  const { updateTask } = useTaskStore();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(task.title);
   const [budgetDraft, setBudgetDraft] = useState(String(task.budget?.amount ?? 0));
@@ -180,7 +180,7 @@ export default function TaskItem({ task, provided, isDragging, viewMode = 'list'
         </button>
         <button
           type="button"
-          onClick={() => deleteTask(task._id)}
+          onClick={(event) => onDeleteRequest(task, event.currentTarget)}
           className="finance-icon-btn red h-9 w-9 shrink-0"
           aria-label={`Delete ${task.title}`}
         >

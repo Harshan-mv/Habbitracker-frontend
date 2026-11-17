@@ -11,7 +11,7 @@ const COLUMNS = [
   { id: 'Done', label: 'Done', color: 'var(--status-done)', background: 'var(--status-done-bg)' },
 ];
 
-export default function TaskKanban({ tasks, isLoading }) {
+export default function TaskKanban({ tasks, isLoading, onDeleteRequest }) {
   const { updateTask, reorderTasks } = useTaskStore();
 
   const onDragEnd = (result) => {
@@ -79,6 +79,7 @@ export default function TaskKanban({ tasks, isLoading }) {
                                 provided={draggable}
                                 isDragging={dragSnapshot.isDragging}
                                 viewMode="board"
+                                onDeleteRequest={onDeleteRequest}
                               />
                             </div>
                           )}

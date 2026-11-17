@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalendarCheck, Check, ChevronDown, ListChecks, LogOut, Moon, Sun, Wallet } from 'lucide-react';
-import { useState } from 'react';
 import useStore from '../store/useStore';
 import { formatDate, getLast12Days } from '../utils/streakLogic';
 import HabitList from '../components/HabitList';
@@ -17,7 +16,29 @@ const TABS = [
 
 export default function Dashboard() {
   const { user, logout, theme, toggleTheme, fetchHabits, fetchLogs, weekOffset, habitsError, logsError } = useStore();
+  const userMenuRef = useRef(null);
   const [activeTab, setActiveTab] = useState('habits');
+
+  useEffect(() => {
+    const userMenu = userMenuRef.current;
+    if (!userMenu) return undefined;
+
+    const closeOnOutsidePointer = (event) => {
+      if (!userMenu.contains(event.target)) userMenu.open = false;
+    };
+    const closeOnEscape = (event) => {
+      if (event.key !== 'Escape' || !userMenu.open) return;
+      userMenu.open = false;
+      userMenu.querySelector('summary')?.focus();
+    };
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     fetchHabits();
@@ -58,7 +79,7 @@ export default function Dashboard() {
           </nav>
 
           <div className="order-2 flex items-center gap-2 md:order-3">
-            <details className="relative">
+            <details ref={userMenuRef} className="relative">
               <summary
                 className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-[var(--radius-control)] border border-[var(--line)] px-3 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] [&::-webkit-details-marker]:hidden"
                 aria-label={`User menu for ${user?.name || 'account'}`}

@@ -6,8 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Habit Tracker — Build better habits every day with streaks, heatmaps, and daily goals." />
     <title>Habit Tracker</title>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      (function (d, s, l, i) {
+        var firstScript = d.getElementsByTagName(s)[0];
+        var script = d.createElement(s);
+        var layerQuery = l !== 'dataLayer' ? `&l=${l}` : '';
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtm.js?id=${i}${layerQuery}`;
+        firstScript.parentNode.insertBefore(script, firstScript);
+      })(document, 'script', 'dataLayer', 'GTM-M3TLDW7C');
+    </script>
   </head>
   <body>
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-M3TLDW7C"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+        title="Google Tag Manager"
+      ></iframe>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

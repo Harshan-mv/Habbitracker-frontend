@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CalendarCheck, Check, ChevronDown, ListChecks, LogOut, Moon, Sun, Wallet } from 'lucide-react';
 import useStore from '../store/useStore';
+import useToastStore from '../store/useToastStore';
+import useClickOutside from '../hooks/useClickOutside';
+import GoogleIdentityButton from '../components/GoogleIdentityButton';
 import { formatDate, getLast12Days } from '../utils/streakLogic';
 import HabitList from '../components/HabitList';
 import HeatmapGrid from '../components/HeatmapGrid';
@@ -15,30 +18,41 @@ const TABS = [
 ];
 
 export default function Dashboard() {
-  const { user, logout, theme, toggleTheme, fetchHabits, fetchLogs, weekOffset, habitsError, logsError } = useStore();
+  const { user, logout, theme, toggleTheme, linkGoogle, fetchHabits, fetchLogs, weekOffset, habitsError, logsError } = useStore();
   const userMenuRef = useRef(null);
+  const userMenuTriggerRef = useRef(null);
   const [activeTab, setActiveTab] = useState('habits');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [googleLinkLoading, setGoogleLinkLoading] = useState(false);
+
+  const closeUserMenu = useCallback(() => setUserMenuOpen(false), []);
+  useClickOutside(userMenuRef, closeUserMenu, userMenuOpen);
+
+  const handleGoogleLink = async (credential) => {
+    closeUserMenu();
+    userMenuTriggerRef.current?.focus();
+    setGoogleLinkLoading(true);
+    try {
+      await linkGoogle(credential);
+    } finally {
+      setGoogleLinkLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const userMenu = userMenuRef.current;
-    if (!userMenu) return undefined;
-
-    const closeOnOutsidePointer = (event) => {
-      if (!userMenu.contains(event.target)) userMenu.open = false;
-    };
     const closeOnEscape = (event) => {
-      if (event.key !== 'Escape' || !userMenu.open) return;
-      userMenu.open = false;
-      userMenu.querySelector('summary')?.focus();
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      closeUserMenu();
+      userMenuTriggerRef.current?.focus();
     };
 
-    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    if (!userMenuOpen) return undefined;
     document.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.removeEventListener('pointerdown', closeOnOutsidePointer);
       document.removeEventListener('keydown', closeOnEscape);
     };
-  }, []);
+  }, [closeUserMenu, userMenuOpen]);
 
   useEffect(() => {
     fetchHabits();
@@ -68,7 +82,10 @@ export default function Dashboard() {
                   key={key}
                   type="button"
                   aria-current={active ? 'page' : undefined}
-                  onClick={() => setActiveTab(key)}
+                  onClick={() => {
+                    setActiveTab(key);
+                    closeUserMenu();
+                  }}
                   className={`flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] px-3 text-sm transition-colors md:flex-none md:px-4 ${active ? 'bg-[var(--surface-raised)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]'}`}
                 >
                   <Icon size={16} strokeWidth={1.7} aria-hidden="true" />
@@ -79,19 +96,48 @@ export default function Dashboard() {
           </nav>
 
           <div className="order-2 flex items-center gap-2 md:order-3">
-            <details ref={userMenuRef} className="relative">
-              <summary
+            <div ref={userMenuRef} className="relative">
+              <button
+                ref={userMenuTriggerRef}
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen}
+                aria-controls="account-menu"
                 className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-[var(--radius-control)] border border-[var(--line)] px-3 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] [&::-webkit-details-marker]:hidden"
                 aria-label={`User menu for ${user?.name || 'account'}`}
+                onClick={() => setUserMenuOpen((open) => !open)}
               >
                 <span className="max-w-28 truncate">{user?.name || 'Account'}</span>
                 <ChevronDown size={14} aria-hidden="true" />
-              </summary>
-              <div className="absolute end-0 top-[calc(100%+8px)] z-30 w-56 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[var(--shadow-raised)]">
-                <p className="truncate px-3 py-2 text-xs text-[var(--text-muted)]">{user?.email || user?.name || 'Your account'}</p>
+              </button>
+              <div
+                id="account-menu"
+                role="menu"
+                aria-label="Account options"
+                hidden={!userMenuOpen}
+                className="absolute end-0 top-[calc(100%+8px)] z-30 w-56 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[var(--shadow-raised)]"
+              >
+                <p role="none" className="truncate px-3 py-2 text-xs text-[var(--text-muted)]">{user?.email || user?.name || 'Your account'}</p>
+                {!user?.googleLinked && (
+                  <div role="group" aria-label="Link Google account" className="border-b border-[var(--line)] px-1 pb-2">
+                    <p role="none" className="px-2 py-1 text-xs font-medium text-[var(--text-muted)]">Link Google account</p>
+                    <GoogleIdentityButton
+                      onCredential={handleGoogleLink}
+                      onError={() => useToastStore.getState().addToast('Google sign-in failed. Please try again.', 'error')}
+                      theme={theme}
+                      loading={googleLinkLoading}
+                      label="Link Google"
+                    />
+                  </div>
+                )}
                 <button
                   type="button"
-                  onClick={toggleTheme}
+                  role="menuitem"
+                  onClick={() => {
+                    toggleTheme();
+                    closeUserMenu();
+                    userMenuTriggerRef.current?.focus();
+                  }}
                   className="flex min-h-10 w-full items-center gap-2 rounded-[var(--radius-control)] px-3 text-left text-sm text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]"
                 >
                   {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
@@ -99,14 +145,18 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
-                  onClick={logout}
+                  role="menuitem"
+                  onClick={() => {
+                    closeUserMenu();
+                    logout();
+                  }}
                   className="flex min-h-10 w-full items-center gap-2 rounded-[var(--radius-control)] px-3 text-left text-sm text-[var(--negative)] hover:bg-[var(--surface-raised)]"
                 >
                   <LogOut size={16} aria-hidden="true" />
                   Sign out
                 </button>
               </div>
-            </details>
+            </div>
           </div>
         </div>
       </header>

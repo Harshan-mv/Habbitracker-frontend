@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import api from '../utils/axiosConfig';
 import useToastStore from './useToastStore';
 
+const persistSession = (session, set) => {
+  localStorage.setItem('token', session.token);
+  localStorage.setItem('user', JSON.stringify(session.user));
+  set({ user: session.user, token: session.token });
+};
+
 const useStore = create((set, get) => ({
   // ─── Auth ───────────────────────────────────────────
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -9,16 +15,48 @@ const useStore = create((set, get) => ({
 
   login: async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    set({ user: res.data.user, token: res.data.token });
+    persistSession(res.data, set);
   },
 
   register: async (name, email, password) => {
     const res = await api.post('/auth/register', { name, email, password });
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    set({ user: res.data.user, token: res.data.token });
+    persistSession(res.data, set);
+  },
+
+  googleLogin: async (credential) => {
+    const res = await api.post('/auth/google', { credential });
+    persistSession(res.data, set);
+  },
+
+  linkGoogle: async (credential) => {
+    try {
+      const res = await api.post('/auth/google/link', { credential });
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      set({ user: res.data.user });
+      useToastStore.getState().addToast('Google account linked');
+      return true;
+    } catch (error) {
+      useToastStore.getState().addToast(
+        error.response?.data?.message || 'Could not link this Google account. Please try again.',
+        'error',
+      );
+      return false;
+    }
+  },
+
+  requestPasswordReset: async (email) => {
+    const res = await api.post('/auth/forgot-password', { email });
+    return res.data;
+  },
+
+  verifyPasswordResetCode: async (email, code) => {
+    const res = await api.post('/auth/verify-otp', { email, code });
+    return res.data.resetToken;
+  },
+
+  resetPassword: async (email, resetToken, password) => {
+    const res = await api.post('/auth/reset-password', { email, resetToken, password });
+    return res.data;
   },
 
   logout: () => {

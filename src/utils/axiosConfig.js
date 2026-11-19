@@ -84,7 +84,8 @@ api.interceptors.response.use(
       wakeToastId = null;
       wakeToastShown = false;
     }
-    if (err.response?.status === 401) {
+    const isInvalidGoogleCredential = err.response?.data?.code === 'INVALID_GOOGLE_CREDENTIAL';
+    if (err.response?.status === 401 && !isInvalidGoogleCredential) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/';

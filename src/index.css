@@ -103,6 +103,9 @@
   --section-summary-available-bg: var(--section-available-bg);
   --danger-button-bg: #903f3a;
   --danger-button-text: #ffffff;
+  --google-button-bg: #232325;
+  --google-button-line: rgba(237, 237, 237, 0.22);
+  --google-button-text: #ededed;
 }
 
 html.light {
@@ -158,6 +161,9 @@ html.light {
   --section-outflow: #6d5879;
   --section-outflow-bg: #eee8f2;
   --danger-button-bg: #8c4038;
+  --google-button-bg: #ffffff;
+  --google-button-line: #747775;
+  --google-button-text: #1f1b16;
 }
 
 * {
@@ -354,6 +360,50 @@ select option {
 .status-message[data-tone="success"] {
   border-color: color-mix(in srgb, var(--positive) 38%, var(--line));
   color: var(--positive);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+  content: "";
+}
+
+.google-auth-control {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.google-auth-fallback {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--google-button-line);
+  border-radius: var(--radius-control);
+  background: var(--google-button-bg);
+  color: var(--google-button-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.google-auth-fallback:disabled {
+  cursor: not-allowed;
+  opacity: 0.76;
 }
 
 .toast-viewport {
